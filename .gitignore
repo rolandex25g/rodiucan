@@ -1,0 +1,15 @@
+/datosimg/general100mod128
+/datosimg/general100mod128secuencia
+/datosimg/general100resultado128
+/datosimg/pruebas
+/datosimg/pruebasSRGAN
+/salida/redautoencoderAC2_128.tf
+/salida/redautoencoderAC2_128pesos
+/salida/redautoencoderAC2_128RGB.tf
+/salida/redautoencoderAC2_128RGBpesos
+/salida/redautoencoderEB128.tf
+/salida/redautoencoderEB128pesos
+/salida/redautoencoderEB128RGB.tf
+/salida/redautoencoderEB128RGBpesos
+/salida/redcombinada128_epoca1pesos
+/salida/redcombinada128RGB_epoca1pesos
