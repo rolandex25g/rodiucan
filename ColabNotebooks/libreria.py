@@ -29,19 +29,6 @@ def getNombreArchivo(num):
     return 'im_'+cad
 #-----------------------------------------------------------------------------------------------------------
 
-#----------Funciones para escalar el dataset DIV2K_train_HR a un tercio de su tamaño
-def getNombreArchivo1000(num):
-    #rellenar con ceros a la izquierda
-    cad=str(num).rjust(4,'0')
-    return cad
-def escalar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,reduccion):
-    for i in range(xposini,xposfin):
-        img = cv2.imread(xcarpeta_img_original+'/'+getNombreArchivo1000(i)+'.png')
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)        
-        img2 = cv2.resize(img, dsize=(int(img.shape[1]/reduccion),int(img.shape[0]/reduccion)), interpolation=cv2.INTER_CUBIC)    
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+'.png',img2)
-#---------------------------
-
 #---------------------------FUNCION DE AUMENTO DE DATOS, reflejo horizontal y vertical
 def aumentar_datos(xposini,xposfin,xcarpeta_img_original,xcarpeta_img):
     xini=xposfin
@@ -147,23 +134,6 @@ def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_im
         #gs_img1 = skimage.io.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img1color+'.png')        
         #gs_img1_ruido = skimage.util.random_noise(gs_img1, mode='gaussian', var=0.003)
         #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img6color+'.png',gs_img1_ruido)
-
-
-#Aplica el filtro canny a las imagenes en escala de grises ()
-def aplicar_filtro_canny(xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_mapimg,xnom_mapimg):
-    for i in range(xposini,xposfin):
-        egrises = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
-        #OpenCV usar formato RGB
-        egrises = cv2.cvtColor(egrises, cv2.COLOR_BGR2GRAY)   
-        nuevoy=int(egrises.shape[0])
-        nuevox=int(egrises.shape[1])
-
-        bordesCanny = cv2.Canny(egrises,10,80)
-        #invertir colores
-        bordesCanny2=np.invert(bordesCanny)
-        #---------bordesCanny2=np.subtract(np.full(bordesCanny.shape,255),bordesCanny)        
-        plt.imsave(xcarpeta_mapimg+'/'+getNombreArchivo(i)+xnom_mapimg+'.png',bordesCanny2,cmap='gray',vmin=0, vmax=255)
-#-----------------------------------------------------------------------------------------------------------
 
 
 #---------------------------FUNCIONES PARA EL AUTOMATA CELULAR
@@ -486,7 +456,7 @@ def unir_parches_en_imagen(decoded_imgs,img_reducida):
             #plt.imsave('general100resultado2x/im_'+cadCeros(str(i))+xnom_img_reconstruida+str(k)+'.png',decoded_imgs[k]*255,cmap='gray')
             for ti in range(0,TAM_PARCHE):
                 for tj in range(0,TAM_PARCHE):
-                    #Los pixeles estan normalizada entre (-1,1) entonces, convertirlos a (0,255)
+                    #Los pixeles estan normalizada entonces, convertirlos a (0,255)
                     ximagen[(alto*y)+ti,(ancho*x)+tj]=(decoded_imgs[k,ti,tj]*127.5)+127.5
             k=k+1
     return ximagen
@@ -503,7 +473,7 @@ def unir_parches_en_imagenColor(decoded_imgs,img_reducida):
             #plt.imsave('general100resultado2x/im_'+cadCeros(str(i))+xnom_img_reconstruida+str(k)+'.png',decoded_imgs[k]*255,cmap='gray')
             for ti in range(0,TAM_PARCHE):
                 for tj in range(0,TAM_PARCHE):
-                    #Los pixeles estan normalizada entre (-1,1) entonces, convertirlos a (0,255)
+                    #Los pixeles estan normalizada entonces, convertirlos a (0,255)
                     ximagen[(alto*y)+ti,(ancho*x)+tj,0]=(decoded_imgs[k,ti,tj,0]*127.5)+127.5
                     ximagen[(alto*y)+ti,(ancho*x)+tj,1]=(decoded_imgs[k,ti,tj,1]*127.5)+127.5
                     ximagen[(alto*y)+ti,(ancho*x)+tj,2]=(decoded_imgs[k,ti,tj,2]*127.5)+127.5
@@ -1323,6 +1293,143 @@ def mostrar_imagen_2f_RGB_GRIS(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xno
         #plt.xlabel('Tamaño:'+str(ximg2.shape),**axis_font)
         plt.imshow(ximg2,cmap='gray',vmin=0, vmax=255)
 
+#La suma de porcentajes A y B debe ser menor a 1
+#Por ejempo 0.40+0.40=0.80 es menor a 1, y el resto 0.20 es el porcentaje del rectángulo pequeña
+def agregarCuadroLupa(c1,ximg1,porcentajeA=0.40,porcentajeB=0.40):
+    porcentaje1x=porcentajeA
+    porcentaje2x=porcentajeB
+    porcentaje1y=porcentajeA
+    porcentaje2y=porcentajeB
+
+    despla1x=int(ximg1.shape[1]*porcentaje1x)
+    despla2x=int(ximg1.shape[1]*porcentaje2x)
+    despla1y=int(ximg1.shape[0]*porcentaje1y)
+    despla2y=int(ximg1.shape[0]*porcentaje2y)
+
+    ancho_rect_peq=int(ximg1.shape[1]*(1-(porcentaje1x+porcentaje2x)))
+    alto_rect_peq=int(ximg1.shape[0]*(1-(porcentaje1y+porcentaje2y)))
+
+    #Desplazamiento del rectángulo grande
+    #desplay_rect_grande=0
+    #desplax_rect_grande=0
+    desplay_rect_grande=int(alto_rect_peq/2)
+    desplax_rect_grande=10
+
+    #Hacer zoom del rectángulo pequeño y pegar en la imagen en la esquina superior izquierda
+    ximg1_zoom=np.copy(ximg1[0+despla1y:ximg1.shape[0]-despla2y,0+despla1x:ximg1.shape[1]-despla2x])
+    ximg1_zoom2 = cv2.resize(ximg1_zoom, dsize=(despla1x,despla1y), interpolation=cv2.INTER_CUBIC)  
+    ximg1[0+desplay_rect_grande:despla1y+desplay_rect_grande,0+desplax_rect_grande:despla1x+desplax_rect_grande]=np.copy(ximg1_zoom2[0:despla1y,0:despla1x])
+
+    #Dibujar bordes rectángulo pequeño
+    c1.plot([despla1x+desplax_rect_grande,despla1x+ancho_rect_peq],[0+despla1y,despla1y],color="#0000DD95")
+    c1.plot([despla1x,despla1x+ancho_rect_peq],[0+despla1y+alto_rect_peq,despla1y+alto_rect_peq],color="#0000DD95")
+    c1.plot([despla1x,despla1x],[0+despla1y+desplay_rect_grande,despla1y+alto_rect_peq],color="#0000DD95")
+    c1.plot([despla1x+ancho_rect_peq,despla1x+ancho_rect_peq],[0+despla1y,despla1y+alto_rect_peq],color="#0000DD95")
+
+    #Dibujar bordes rectángulo grande
+    rect2 = patches.Rectangle((0+desplax_rect_grande, 0+desplay_rect_grande),
+                             despla1x,
+                             despla1y, linewidth=2, edgecolor='#333333', facecolor='none')
+    c1.add_patch(rect2)
+    
+    #Dinujar lineas diagonales
+    c1.plot([despla1x+desplax_rect_grande,despla1x+ancho_rect_peq],[0+desplay_rect_grande,despla1y],color="#0000DD95")
+    c1.plot([0+desplax_rect_grande,despla1x],[despla1y+desplay_rect_grande,despla1y+alto_rect_peq],color="#0000DD95")
+    return ximg1_zoom
+
+def mostrar_imagen_2f_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_img2):
+    for i in range(xposini,xposfin):
+        tablag=plt.figure(figsize=(20, 20))
+        #axis_font = {'size':'18'}
+        
+        ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
+        ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2GRAY)
+        c1=tablag.add_subplot(1,2,1)
+        plt.title(getNombreArchivo(i)+xnom_img1+'.png')
+        #plt.xlabel('Tamaño:'+str(ximg1.shape),**axis_font)
+        agregarCuadroLupa(c1,ximg1)
+        plt.imshow(ximg1,cmap='gray',vmin=0, vmax=255)
+        
+        ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
+        ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)        
+        c1=tablag.add_subplot(1,2,2)
+        plt.title(getNombreArchivo(i)+xnom_img2+'.png')
+        #plt.xlabel('Tamaño:'+str(ximg2.shape),**axis_font)
+        agregarCuadroLupa(c1,ximg2)
+        plt.imshow(ximg2,cmap='gray',vmin=0, vmax=255)
+
+def mostrar_imagen_2f_RGB_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_img2):
+    for i in range(xposini,xposfin):
+        tablag=plt.figure(figsize=(20, 20))
+        #axis_font = {'size':'18'}
+        
+        ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
+        ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2RGB)
+        c1=tablag.add_subplot(1,2,1)
+        plt.title(getNombreArchivo(i)+xnom_img1+'png')
+        #plt.xlabel('Tamaño:'+str(ximg1.shape),**axis_font)
+        agregarCuadroLupa(c1,ximg1)
+        plt.imshow(ximg1)
+
+        ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
+        ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2RGB)
+        c1=tablag.add_subplot(1,2,2)
+        plt.title(getNombreArchivo(i)+xnom_img2+'.png')
+        #plt.xlabel('Tamaño:'+str(ximg2.shape),**axis_font)
+        agregarCuadroLupa(c1,ximg2)
+        plt.imshow(ximg2)
+
+def mostrar_imagen_3f_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_img2,xcarpeta3,xnom_img3):
+    for i in range(xposini,xposfin):
+        tablag=plt.figure(figsize=(20, 20))
+        #axis_font = {'size':'18'}
+        
+        ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
+        ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2GRAY)
+        c1=tablag.add_subplot(1,3,1)
+        plt.title(getNombreArchivo(i)+xnom_img1+'.png')
+        agregarCuadroLupa(c1,ximg1,0.50,0.30)
+        plt.imshow(ximg1,cmap='gray',vmin=0, vmax=255)
+        
+        ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
+        ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)
+        c1=tablag.add_subplot(1,3,2)
+        plt.title(getNombreArchivo(i)+xnom_img2+'.png')
+        agregarCuadroLupa(c1,ximg2,0.50,0.30)
+        plt.imshow(ximg2,cmap='gray',vmin=0, vmax=255)
+        
+        ximg3=cv2.imread(xcarpeta3+'/'+getNombreArchivo(i)+xnom_img3+'.png')
+        ximg3=cv2.cvtColor(ximg3, cv2.COLOR_BGR2GRAY)
+        c1=tablag.add_subplot(1,3,3)
+        agregarCuadroLupa(c1,ximg3,0.50,0.30)
+        plt.title(getNombreArchivo(i)+xnom_img3+'.png')
+        plt.imshow(ximg3,cmap='gray',vmin=0, vmax=255)
+
+def mostrar_imagen_3f_RGB_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_img2,xcarpeta3,xnom_img3):
+    for i in range(xposini,xposfin):
+        tablag=plt.figure(figsize=(20, 20))
+        #axis_font = {'size':'18'}
+        
+        ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
+        ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2RGB)
+        c1=tablag.add_subplot(1,3,1)
+        plt.title(getNombreArchivo(i)+xnom_img1+'.png')
+        agregarCuadroLupa(c1,ximg1,0.50,0.30)
+        plt.imshow(ximg1)
+        
+        ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
+        ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2RGB)
+        c1=tablag.add_subplot(1,3,2)
+        plt.title(getNombreArchivo(i)+xnom_img2+'.png')
+        agregarCuadroLupa(c1,ximg2,0.50,0.30)
+        plt.imshow(ximg2)
+        
+        ximg3=cv2.imread(xcarpeta3+'/'+getNombreArchivo(i)+xnom_img3+'.png')
+        ximg3=cv2.cvtColor(ximg3, cv2.COLOR_BGR2RGB)
+        c1=tablag.add_subplot(1,3,3)
+        plt.title(getNombreArchivo(i)+xnom_img3+'.png')
+        agregarCuadroLupa(c1,ximg3,0.50,0.30)
+        plt.imshow(ximg3)
 
 #---------------------------FUNCIONES PARA GUARDAR, ABRIR, EXPORTAR LOS MODELOS-----------------
 #Método1: Guardar TODO el modelo en formato h5
