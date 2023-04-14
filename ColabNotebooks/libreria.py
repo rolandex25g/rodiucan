@@ -29,23 +29,12 @@ def getNombreArchivo(num):
     return 'im_'+cad
 #-----------------------------------------------------------------------------------------------------------
 
-#---------------------------FUNCION DE AUMENTO DE DATOS, reflejo horizontal y vertical
-def aumentar_datos(xposini,xposfin,xcarpeta_img_original,xcarpeta_img):
-    xini=xposfin
-    for i in range(xposini,xposfin):
-        img = cv2.imread(xcarpeta_img_original+'/'+getNombreArchivo(i)+'.png')
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+'.png',img)
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(xini)+'.png',cv2.flip(img,0))
-        xini=xini+1
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(xini)+'.png',cv2.flip(img,1))
-        xini=xini+1
-
 #---------------------------FUNCION INICIAL DE PROCESAMIENTO DE IMAGENES
 #Procesa las imagenes originales, convirtiendolas a color y en grises escaladas un multiplo de TAM_PARCHE, 
 #y construyendo las imagenes reducidas un factor de 2x, 4x y 6x. Y tambien aplicando filtro desenfoque.
 #def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_img1,xnom_img1color,xnom_img2,xnom_img2color,xnom_img3,xnom_img3color,xnom_img4,xnom_img4color,xnom_img5,xnom_img5color,xnom_img7,xnom_img7color,xnom_img8,xnom_img8color,xnom_img9,xnom_img9color,xnom_img6,xnom_img6color):
-def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_img1,xnom_img1color,xnom_img2,xnom_img2color,xnom_img3,xnom_img3color,xnom_img4,xnom_img4color,xnom_img5,xnom_img5color,xnom_img7,xnom_img7color,xnom_img8,xnom_img8color,xnom_img9,xnom_img9color):
+#def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_img1,xnom_img1color,xnom_img2,xnom_img2color,xnom_img3,xnom_img3color,xnom_img4,xnom_img4color,xnom_img5,xnom_img5color,xnom_img7,xnom_img7color,xnom_img8,xnom_img8color,xnom_img9,xnom_img9color):
+def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_img1,xnom_img1color,xnom_img2,xnom_img2color,xnom_img3,xnom_img3color,xnom_img4,xnom_img4color,xnom_img5,xnom_img5color):
     for i in range(xposini,xposfin):
         img = cv2.imread(xcarpeta_img_original+'/'+getNombreArchivo(i)+'.png')
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -66,20 +55,20 @@ def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_im
         img4 = cv2.resize(img3, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
         img3nearest = cv2.resize(egrises, dsize=(int(nuevox/2),int(nuevoy/2)), interpolation=cv2.INTER_NEAREST)
         img4nearest = cv2.resize(img3nearest, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_NEAREST)
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2+'r2.png',img3,cmap='gray')
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2+'r2.png',img3,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2+'.png',img4,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2+'nearest.png',img4nearest,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2+'nearestblur.png',cv2.blur(img4nearest,(5,5)),cmap='gray')
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img7+'.png',cv2.blur(img4,(5,5)),cmap='gray')
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img7+'.png',cv2.blur(img4,(5,5)),cmap='gray')
         img3 = cv2.resize(img2, dsize=(int(nuevox/2),int(nuevoy/2)), interpolation=cv2.INTER_CUBIC)
         img4 = cv2.resize(img3, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
         img3nearest = cv2.resize(img2, dsize=(int(nuevox/2),int(nuevoy/2)), interpolation=cv2.INTER_NEAREST)
         img4nearest = cv2.resize(img3nearest, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_NEAREST)
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2color+'r2.png',img3)
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2color+'r2.png',img3)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2color+'.png',img4)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2color+'nearest.png',img4nearest)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2color+'nearestblur.png',cv2.blur(img4nearest,(5,5)))
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img7color+'.png',cv2.blur(img4,(5,5)))
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img7color+'.png',cv2.blur(img4,(5,5)))
         
         
         #----------Reducir a la cuarta 4x y reescalada a 4x
@@ -87,40 +76,40 @@ def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_im
         img6 = cv2.resize(img5, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
         img5nearest = cv2.resize(egrises, dsize=(int(nuevox/4),int(nuevoy/4)), interpolation=cv2.INTER_NEAREST)
         img6nearest = cv2.resize(img5nearest, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_NEAREST)
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3+'r4.png',img5,cmap='gray')
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3+'r4.png',img5,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3+'.png',img6,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3+'nearest.png',img6nearest,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3+'nearestblur.png',cv2.blur(img6nearest,(5,5)),cmap='gray')
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img8+'.png',cv2.blur(img6,(5,5)),cmap='gray')
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img8+'.png',cv2.blur(img6,(5,5)),cmap='gray')
         img5 = cv2.resize(img2, dsize=(int(nuevox/4),int(nuevoy/4)), interpolation=cv2.INTER_CUBIC)
         img6 = cv2.resize(img5, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
         img5nearest = cv2.resize(img2, dsize=(int(nuevox/4),int(nuevoy/4)), interpolation=cv2.INTER_NEAREST)
         img6nearest = cv2.resize(img5nearest, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_NEAREST)
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3color+'r4.png',img5)
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3color+'r4.png',img5)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3color+'.png',img6)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3color+'nearest.png',img6nearest)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3color+'nearestblur.png',cv2.blur(img6nearest,(5,5)))
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img8color+'.png',cv2.blur(img6,(5,5)))
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img8color+'.png',cv2.blur(img6,(5,5)))
         
         #----------Reducir a la sexta 6x y reescalada a 6x
         img7 = cv2.resize(egrises, dsize=(int(nuevox/6),int(nuevoy/6)), interpolation=cv2.INTER_CUBIC)
         img8 = cv2.resize(img7, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
         img7nearest = cv2.resize(egrises, dsize=(int(nuevox/6),int(nuevoy/6)), interpolation=cv2.INTER_NEAREST)
         img8nearest = cv2.resize(img7nearest, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_NEAREST)
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4+'r6.png',img7,cmap='gray')
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4+'r6.png',img7,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4+'.png',img8,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4+'nearest.png',img8nearest,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4+'nearestblur.png',cv2.blur(img8nearest,(5,5)),cmap='gray')
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img9+'.png',cv2.blur(img8,(5,5)),cmap='gray')
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img9+'.png',cv2.blur(img8,(5,5)),cmap='gray')
         img7 = cv2.resize(img2, dsize=(int(nuevox/6),int(nuevoy/6)), interpolation=cv2.INTER_CUBIC)
         img8 = cv2.resize(img7, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
         img7nearest = cv2.resize(img2, dsize=(int(nuevox/6),int(nuevoy/6)), interpolation=cv2.INTER_NEAREST)
         img8nearest = cv2.resize(img7nearest, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_NEAREST)
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4color+'r6.png',img7)
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4color+'r6.png',img7)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4color+'.png',img8)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4color+'nearest.png',img8nearest)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4color+'nearestblur.png',cv2.blur(img8nearest,(5,5)))
-        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img9color+'.png',cv2.blur(img8,(5,5)))
+        #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img9color+'.png',cv2.blur(img8,(5,5)))
         
         #----------Desenfoque-----------
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img5+'.png',cv2.blur(egrises,(5,5)),cmap='gray')
