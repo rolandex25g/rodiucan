@@ -26,27 +26,27 @@ Un ejemplo demostrativo también está disponible en Hugging Face:
 
 <p>
 1. Prueba inicial con una sola imagen. 
-<a target="_blank" href="https://colab.research.google.com/drive/1u71QG7u_CsVgDqMQdw10Z6k7vFD-Up9c/view?usp=sharing">Cuaderno 1</a>
+<a target="_blank" href="https://colab.research.google.com/drive/1u71QG7u_CsVgDqMQdw10Z6k7vFD-Up9c">Cuaderno 1</a>
 </p>
 <p>
 2. Pre-procesamiento de todas las imágenes. 
-<a target="_blank" href="https://colab.research.google.com/drive/1LavGy5UX8Vc7iYs-3OVay6CwRBr68RPC/view?usp=sharing">Cuaderno 2</a>
+<a target="_blank" href="https://colab.research.google.com/drive/1LavGy5UX8Vc7iYs-3OVay6CwRBr68RPC">Cuaderno 2</a>
 </p>
 <p>
 3. Entrenar el modelo para imágenes en escala de grises. 
-<a target="_blank" href="https://colab.research.google.com/drive/195EtfZRL-Grkdopl67l0tCnWVOl675BF/view?usp=sharing">Cuaderno 3</a>
+<a target="_blank" href="https://colab.research.google.com/drive/195EtfZRL-Grkdopl67l0tCnWVOl675BF">Cuaderno 3</a>
 </p>
 <p>
 4. Entrenar el modelo para imágenes a color. 
-<a target="_blank" href="https://colab.research.google.com/drive/12f3jdIrYLPgY2lPSOL6gzwZ4U46EzDh6/view?usp=sharing">Cuaderno 4</a>
+<a target="_blank" href="https://colab.research.google.com/drive/12f3jdIrYLPgY2lPSOL6gzwZ4U46EzDh6">Cuaderno 4</a>
 </p>
 <p>
 5. Comparar resultados del modelo propuesto RODIUCAN con el modelo ESRGAN. 
-<a target="_blank" href="https://colab.research.google.com/drive/186MRR2JzVXVXx-CdtpoDPZgeW3mog4Sd/view?usp=sharing">Cuaderno 5</a>
+<a target="_blank" href="https://colab.research.google.com/drive/186MRR2JzVXVXx-CdtpoDPZgeW3mog4Sd">Cuaderno 5</a>
 </p>
 <p>
 6. <b>Ejemplo de uso</b> del modelo h5 en colores. 
-<a target="_blank" href="https://colab.research.google.com/drive/1_mJ_Sy0HtPsGu-g72wqrdvW8tFL1gYEE/view?usp=sharing">Cuaderno 6</a>
+<a target="_blank" href="https://colab.research.google.com/drive/1_mJ_Sy0HtPsGu-g72wqrdvW8tFL1gYEE">Cuaderno 6</a>
 </p>
 
 <h3>Entrenamiento</h3>
