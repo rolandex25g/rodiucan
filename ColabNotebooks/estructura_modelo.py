@@ -37,8 +37,6 @@ def funcion_de_perdida_red2(val_verdadero, val_predicho):
 def funcion_de_perdida_red_combinada(val_verdadero, val_predicho):
     #Error cuadrático medio
     return tf.reduce_mean(tf.square(tf.subtract(val_verdadero,val_predicho)))
-    #Combinar el error de las dos salidas
-    #return funcion_de_perdida_red1(val_verdadero[0], val_predicho[0])+funcion_de_perdida_red2(val_verdadero[1], val_predicho[1])
 
 def RedAutoencoderEB():
     e0=layers.Input(shape=(128, 128,1))

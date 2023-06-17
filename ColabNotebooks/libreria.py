@@ -29,6 +29,18 @@ def getNombreArchivo(num):
     return 'im_'+cad
 #-----------------------------------------------------------------------------------------------------------
 
+#---------------------------FUNCION DE AUMENTO DE DATOS, reflejo horizontal y vertical
+def aumentar_datos(xposini,xposfin,xcarpeta_img_original,xcarpeta_img):
+    xini=xposfin
+    for i in range(xposini,xposfin):
+        img = cv2.imread(xcarpeta_img_original+'/'+getNombreArchivo(i)+'.png')
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+'.png',img)
+        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(xini)+'.png',cv2.flip(img,0))
+        xini=xini+1
+        plt.imsave(xcarpeta_img+'/'+getNombreArchivo(xini)+'.png',cv2.flip(img,1))
+        xini=xini+1
+
 #---------------------------FUNCION INICIAL DE PROCESAMIENTO DE IMAGENES
 #Procesa las imagenes originales, convirtiendolas a color y en grises escaladas un multiplo de TAM_PARCHE, 
 #y construyendo las imagenes reducidas un factor de 2x, 4x y 6x. Y tambien aplicando filtro desenfoque.
