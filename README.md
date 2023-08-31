@@ -3,6 +3,8 @@
 </p>
 <p>Es un trabajo de tesis que propone un modelo para aumentar la resolución de imágenes utilizando autómatas celulares y redes neuronales convolucionales, considerando un conjunto de datos reducido para optimizar el uso de los recursos computacionales.</p>
 
+![ejemplo](ejemplo.jpg)
+
 <h3>Códio fuente y ejemplos</h3>
 <p>
 <a target="_blank" href="https://github.com/rolandex25g/rodiucan.git">RODIUCAN github</a>
