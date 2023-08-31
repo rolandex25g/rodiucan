@@ -1,5 +1,11 @@
+/ColabNotebooks/etapa1 imagenes y automatas.ipynb
+/ColabNotebooks/etapa2 aumento y reduccion de imagenes.ipynb
+/ColabNotebooks/etapa3 prepara y entrena modelo
+/ColabNotebooks/etapa3 prepara y entrena modeloRGB.ipynb
+/ColabNotebooks/etapa4 prueba de calidad modelo.ipynb
 /ColabNotebooks/.ipynb_checkpoints
 /ColabNotebooks/flagged
+/datosimg/general100
 /datosimg/general100mod128
 /datosimg/general100mod128secuencia
 /datosimg/general100resultado128
@@ -11,3 +17,5 @@
 /salida/redautoencoderEB128RGBpesos
 /salida/redcombinada128_epoca1pesos
 /salida/redcombinada128RGB_epoca1pesos
+/salida/redcombinada128_epoca1.h5
+/salida/redcombinada128RGB_epoca1.h5

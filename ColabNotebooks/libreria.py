@@ -6,17 +6,19 @@ Created on Sun Nov 20 13:54:26 2022
 """
 import tensorflow as tf
 
-from tensorflow.keras import layers, losses
-from tensorflow.keras.models import Model
+#from tensorflow.keras import layers, losses
+#from tensorflow.keras.models import Model
 
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-import os
+#import os
 #from datetime import datetime
 #from joblib import Parallel, delayed
-import gc
-import sys
+#import gc
+#import sys
+import skimage
+import matplotlib.patches as patches
 
 #-----------------------VARIABLES GLOBALES--------------------
 TAM_PARCHE=128
@@ -42,7 +44,7 @@ def aumentar_datos(xposini,xposfin,xcarpeta_img_original,xcarpeta_img):
         xini=xini+1
 
 #---------------------------FUNCION INICIAL DE PROCESAMIENTO DE IMAGENES
-#Procesa las imagenes originales, convirtiendolas a color y en grises escaladas un multiplo de TAM_PARCHE, 
+#Procesa las imagenes originales, convirtiendolas a color y en grises escaladas un multiplo de TAM_PARCHE,
 #y construyendo las imagenes reducidas un factor de 2x, 4x y 6x. Y tambien aplicando filtro desenfoque.
 #def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_img1,xnom_img1color,xnom_img2,xnom_img2color,xnom_img3,xnom_img3color,xnom_img4,xnom_img4color,xnom_img5,xnom_img5color,xnom_img7,xnom_img7color,xnom_img8,xnom_img8color,xnom_img9,xnom_img9color,xnom_img6,xnom_img6color):
 #def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_img1,xnom_img1color,xnom_img2,xnom_img2color,xnom_img3,xnom_img3color,xnom_img4,xnom_img4color,xnom_img5,xnom_img5color,xnom_img7,xnom_img7color,xnom_img8,xnom_img8color,xnom_img9,xnom_img9color):
@@ -55,13 +57,13 @@ def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_im
         tamsegx=int(img.shape[1]/TAM_PARCHE)+1
         nuevoy=tamsegy*TAM_PARCHE
         nuevox=tamsegx*TAM_PARCHE
-        img2 = cv2.resize(img, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)    
+        img2 = cv2.resize(img, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
         #Convertir a grises y guardar
         r,g,b=img2[:,:,0],img2[:,:,1],img2[:,:,2]
         egrises=0.2989*r+0.5870*g+0.1140*b
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img1+'.png',egrises,cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img1color+'.png',img2)
-        
+
         #----------Reducir a la mitad 2x y reescalada a 2x
         img3 = cv2.resize(egrises, dsize=(int(nuevox/2),int(nuevoy/2)), interpolation=cv2.INTER_CUBIC)
         img4 = cv2.resize(img3, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
@@ -81,8 +83,8 @@ def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_im
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2color+'nearest.png',img4nearest)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img2color+'nearestblur.png',cv2.blur(img4nearest,(5,5)))
         #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img7color+'.png',cv2.blur(img4,(5,5)))
-        
-        
+
+
         #----------Reducir a la cuarta 4x y reescalada a 4x
         img5 = cv2.resize(egrises, dsize=(int(nuevox/4),int(nuevoy/4)), interpolation=cv2.INTER_CUBIC)
         img6 = cv2.resize(img5, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
@@ -102,7 +104,7 @@ def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_im
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3color+'nearest.png',img6nearest)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img3color+'nearestblur.png',cv2.blur(img6nearest,(5,5)))
         #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img8color+'.png',cv2.blur(img6,(5,5)))
-        
+
         #----------Reducir a la sexta 6x y reescalada a 6x
         img7 = cv2.resize(egrises, dsize=(int(nuevox/6),int(nuevoy/6)), interpolation=cv2.INTER_CUBIC)
         img8 = cv2.resize(img7, dsize=(nuevox,nuevoy), interpolation=cv2.INTER_CUBIC)
@@ -122,17 +124,17 @@ def procesar_imagenes(xposini,xposfin,xcarpeta_img_original,xcarpeta_img,xnom_im
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4color+'nearest.png',img8nearest)
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img4color+'nearestblur.png',cv2.blur(img8nearest,(5,5)))
         #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img9color+'.png',cv2.blur(img8,(5,5)))
-        
+
         #----------Desenfoque-----------
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img5+'.png',cv2.blur(egrises,(5,5)),cmap='gray')
         plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img5color+'.png',cv2.blur(img2,(5,5)))
-        
+
         #----------Ruido gaussiano
-        #gs_img1 = skimage.io.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img1+'.png')        
+        #gs_img1 = skimage.io.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         #gs_img1_ruido = skimage.util.random_noise(gs_img1, mode='gaussian', var=0.003)
         #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img6+'.png',gs_img1_ruido,cmap='gray')
-        
-        #gs_img1 = skimage.io.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img1color+'.png')        
+
+        #gs_img1 = skimage.io.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img1color+'.png')
         #gs_img1_ruido = skimage.util.random_noise(gs_img1, mode='gaussian', var=0.003)
         #plt.imsave(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img6color+'.png',gs_img1_ruido)
 
@@ -196,11 +198,11 @@ def aplicar_automata6var(xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_mapimg,x
     for i in range(xposini,xposfin):
         egrises = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
         egrises = cv2.cvtColor(egrises, cv2.COLOR_BGR2GRAY)
-        
+
         original_nuevoy=int(egrises.shape[0])
         original_nuevox=int(egrises.shape[1])
         egrises = cv2.resize(egrises, dsize=(original_nuevox*2,original_nuevoy*2), interpolation=cv2.INTER_CUBIC)
-        
+
         nuevoy=int(egrises.shape[0])
         nuevox=int(egrises.shape[1])
         #automata crear estructuras
@@ -246,11 +248,11 @@ def aplicar_automata6var_inverso(xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_
     for i in range(xposini,xposfin):
         egrises = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
         egrises = cv2.cvtColor(egrises, cv2.COLOR_BGR2GRAY)
-        
+
         original_nuevoy=int(egrises.shape[0])
         original_nuevox=int(egrises.shape[1])
         egrises = cv2.resize(egrises, dsize=(original_nuevox*2,original_nuevoy*2), interpolation=cv2.INTER_CUBIC)
-        
+
         nuevoy=int(egrises.shape[0])
         nuevox=int(egrises.shape[1])
         #automata crear estructuras
@@ -295,27 +297,27 @@ def aplicar_automata6var_inverso(xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_
 def combinar_automata6var(xposini,xposfin,xcarpeta_mapimg,xnom_mapimg,xcarpeta_mapimg_inv,xnom_mapimg_inv,xcarpeta_mapimg_comb,xnom_mapimg_comb):
     for i in range(xposini,xposfin):
         #egrises = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
-        #egrises = cv2.cvtColor(egrises, cv2.COLOR_BGR2GRAY)   
+        #egrises = cv2.cvtColor(egrises, cv2.COLOR_BGR2GRAY)
 
         xmapa=cv2.imread(xcarpeta_mapimg+'/'+getNombreArchivo(i)+xnom_mapimg+'.png')
         xmapa=cv2.cvtColor(xmapa, cv2.COLOR_BGR2GRAY)
-        
+
         nuevoy=int(xmapa.shape[0])
         nuevox=int(xmapa.shape[1])
-        
+
         xmapa_inv=cv2.imread(xcarpeta_mapimg_inv+'/'+getNombreArchivo(i)+xnom_mapimg_inv+'.png')
         xmapa_inv=cv2.cvtColor(xmapa_inv, cv2.COLOR_BGR2GRAY)
-        
+
         #automata crear estructuras
         #matrizI=np.copy(egrises)
         matrizA=np.copy(xmapa)
         #matrizA2=np.copy(xmapa)
         #matrizB=np.copy(xmapa)
         #matrizC=np.copy(xmapa_inv)
-        
+
         matrizB_AB=ampliarBordesImagen(xmapa, 1)
         matrizC_AB=ampliarBordesImagen(xmapa_inv, 1)
-        
+
         for y in range(0,nuevoy):
             for x in range(0,nuevox):
                 numvivasB=contarVecinasVivas(matrizB_AB,nuevoy,nuevox,y,x)
@@ -328,18 +330,18 @@ def combinar_automata6var(xposini,xposfin,xcarpeta_mapimg,xnom_mapimg,xcarpeta_m
                 #rango2=((decimales*1000))/999
                 matrizA[y,x]=int(rango*255)
                 #setValor(matrizA2,nuevoy,nuevox,y,x,int(rango2*255))
-        
+
         #Difuminar los puntos NO ayuda en nada
         #matrizA=ampliarBordesImagen(matrizA, 1)
         #for y in range(1,nuevoy+1):
         #    for x in range(1,nuevox+1):
         #        matrizA[y,x]=int((((matrizA[y,x]/255)+(matrizA[y+1,x]/255)+(matrizA[y,x+1]/255)+(matrizA[y+1,x+1]/255))/4)*255)
         #matrizA=recortarBordesImagen(matrizA, 1)
-        
+
         #plt.imsave(xcarpeta_mapimg_comb+'/'+getNombreArchivo(i)+xnom_mapimg_comb+'_D.png',matrizA2,cmap='gray',vmin=0, vmax=255)
         #matrizA=cv2.blur(matrizA,(2,2))
         matrizA = cv2.resize(matrizA, dsize=(int(nuevox/2),int(nuevoy/2)), interpolation=cv2.INTER_CUBIC)
-        
+
         plt.imsave(xcarpeta_mapimg_comb+'/'+getNombreArchivo(i)+xnom_mapimg_comb+'.png',matrizA,cmap='gray',vmin=0, vmax=255)
 
 def mostrar_imagen_secuencia_ac(xposini,xposfin,xcarpeta_secuenciaimg,xnom_secimg,maxsec):
@@ -354,11 +356,220 @@ def mostrar_imagen_secuencia_ac(xposini,xposfin,xcarpeta_secuenciaimg,xnom_secim
 #-----------------------------------------------------------------------------------------------------------
 
 
+#-------------PARA APLICAR AUTOMATAS A IMAGENES A COLOR--------------
+def aplicar_automata6varRGB(xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_mapimg,xnom_mapimg,xcarpeta_secuenciaimg,xnom_secimg,maxsec):
+    for i in range(xposini,xposfin):
+        ecolor = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
+        ecolor = cv2.cvtColor(ecolor, cv2.COLOR_BGR2RGB)
+
+        original_nuevoy=int(ecolor.shape[0])
+        original_nuevox=int(ecolor.shape[1])
+        ecolor = cv2.resize(ecolor, dsize=(original_nuevox*2,original_nuevoy*2), interpolation=cv2.INTER_CUBIC)
+
+        matrizA_R = get_automata6varCanal(ecolor[:,:,0],i,xcarpeta_secuenciaimg,xnom_secimg+'_R',maxsec)
+        matrizA_G = get_automata6varCanal(ecolor[:,:,1],i,xcarpeta_secuenciaimg,xnom_secimg+'_G',maxsec)
+        matrizA_B = get_automata6varCanal(ecolor[:,:,2],i,xcarpeta_secuenciaimg,xnom_secimg+'_B',maxsec)
+        for ra in range(0,maxsec):
+            eR = cv2.imread(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_R'+'_'+str(ra)+'.png')
+            eR = cv2.cvtColor(eR, cv2.COLOR_BGR2GRAY)
+            eG = cv2.imread(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_G'+'_'+str(ra)+'.png')
+            eG = cv2.cvtColor(eG, cv2.COLOR_BGR2GRAY)
+            eB = cv2.imread(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_B'+'_'+str(ra)+'.png')
+            eB = cv2.cvtColor(eB, cv2.COLOR_BGR2GRAY)
+            xmapa=np.zeros((eR.shape[0],eR.shape[1],3))
+            xmapa[:,:,0]=eR[:,:]
+            xmapa[:,:,1]=eG[:,:]
+            xmapa[:,:,2]=eB[:,:]
+            ymapa=xmapa.astype(np.uint8)
+            plt.imsave(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_'+str(ra)+'.png',ymapa)
+
+        ximagen=np.zeros((ecolor.shape[0],ecolor.shape[1],3))
+        ximagen[:,:,0]=matrizA_R[:,:]
+        ximagen[:,:,1]=matrizA_G[:,:]
+        ximagen[:,:,2]=matrizA_B[:,:]
+        yimagen=ximagen.astype(np.uint8)
+
+        #guardar mapa
+        #matrizA = cv2.resize(matrizA, dsize=(original_nuevox,original_nuevoy), interpolation=cv2.INTER_CUBIC)
+        #plt.imsave(xcarpeta_mapimg+'/'+getNombreArchivo(i)+xnom_mapimg+'.png',matrizA,cmap='gray',vmin=0, vmax=255)
+        plt.imsave(xcarpeta_mapimg+'/'+getNombreArchivo(i)+xnom_mapimg+'.png',yimagen)
+
+def get_automata6varCanal(ecanal,i,xcarpeta_secuenciaimg,xnom_secimg,maxsec):
+    nuevoy=int(ecanal.shape[0])
+    nuevox=int(ecanal.shape[1])
+    matrizI=np.copy(ecanal)
+    matrizA=np.copy(ecanal)
+    for y in range(0,nuevoy):
+        for x in range(0,nuevox):
+            #matrizA[y,x]=aleatorio(0,1)
+            if y % 2 == 0 or x % 2 == 0:
+                matrizA[y,x]=1*255
+            else:
+                matrizA[y,x]=0*255
+    matrizI_AB=ampliarBordesImagen(matrizI, 1)
+    #automata iterar maxsec veces
+    for ra in range(0,maxsec):
+        plt.imsave(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_'+str(ra)+'.png',matrizA,cmap='gray',vmin=0, vmax=255)
+        cop_matrizA=np.copy(matrizA)
+        matrizA_AB=ampliarBordesImagen(matrizA, 1)
+        for y in range(0,nuevoy):
+            for x in range(0,nuevox):
+                numsimilares=contarVecinasSimilares(matrizI_AB,nuevoy,nuevox,y,x,3)
+                numvivas=contarVecinasVivas(matrizA_AB,nuevoy,nuevox,y,x)+numsimilares
+                if(matrizA[y,x]==VG_VIVO):
+                    if numvivas<2:
+                        if numsimilares>3:
+                            cop_matrizA[y,x]=VG_MUERTO
+                    else:
+                        if(numvivas==2 or numvivas==3):
+                            pass
+                        else:
+                            if numsimilares>3:
+                                cop_matrizA[y,x]=VG_MUERTO
+                else:
+                    if numvivas==3:
+                        if numsimilares<=3:
+                            cop_matrizA[y,x]=VG_VIVO
+        matrizA=np.copy(cop_matrizA)
+    return matrizA
+
+def aplicar_automata6var_inversoRGB(xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_mapimg,xnom_mapimg,xcarpeta_secuenciaimg,xnom_secimg,maxsec):
+    for i in range(xposini,xposfin):
+        ecolor = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
+        ecolor = cv2.cvtColor(ecolor, cv2.COLOR_BGR2RGB)
+
+        original_nuevoy=int(ecolor.shape[0])
+        original_nuevox=int(ecolor.shape[1])
+        ecolor = cv2.resize(ecolor, dsize=(original_nuevox*2,original_nuevoy*2), interpolation=cv2.INTER_CUBIC)
+
+        matrizA_R = get_automata6var_inversoCanal(ecolor[:,:,0],i,xcarpeta_secuenciaimg,xnom_secimg+'_R',maxsec)
+        matrizA_G = get_automata6var_inversoCanal(ecolor[:,:,1],i,xcarpeta_secuenciaimg,xnom_secimg+'_G',maxsec)
+        matrizA_B = get_automata6var_inversoCanal(ecolor[:,:,2],i,xcarpeta_secuenciaimg,xnom_secimg+'_B',maxsec)
+        for ra in range(0,maxsec):
+            eR = cv2.imread(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_R'+'_'+str(ra)+'.png')
+            eR = cv2.cvtColor(eR, cv2.COLOR_BGR2GRAY)
+            eG = cv2.imread(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_G'+'_'+str(ra)+'.png')
+            eG = cv2.cvtColor(eG, cv2.COLOR_BGR2GRAY)
+            eB = cv2.imread(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_B'+'_'+str(ra)+'.png')
+            eB = cv2.cvtColor(eB, cv2.COLOR_BGR2GRAY)
+            xmapa=np.zeros((eR.shape[0],eR.shape[1],3))
+            xmapa[:,:,0]=eR[:,:]
+            xmapa[:,:,1]=eG[:,:]
+            xmapa[:,:,2]=eB[:,:]
+            ymapa=xmapa.astype(np.uint8)
+            plt.imsave(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_'+str(ra)+'.png',ymapa)
+
+        ximagen=np.zeros((ecolor.shape[0],ecolor.shape[1],3))
+        ximagen[:,:,0]=matrizA_R[:,:]
+        ximagen[:,:,1]=matrizA_G[:,:]
+        ximagen[:,:,2]=matrizA_B[:,:]
+        yimagen=ximagen.astype(np.uint8)
+
+        #guardar mapa
+        #matrizA = cv2.resize(matrizA, dsize=(original_nuevox,original_nuevoy), interpolation=cv2.INTER_CUBIC)
+        #plt.imsave(xcarpeta_mapimg+'/'+getNombreArchivo(i)+xnom_mapimg+'.png',matrizA,cmap='gray',vmin=0, vmax=255)
+        plt.imsave(xcarpeta_mapimg+'/'+getNombreArchivo(i)+xnom_mapimg+'.png',yimagen)
+
+def get_automata6var_inversoCanal(ecanal,i,xcarpeta_secuenciaimg,xnom_secimg,maxsec):
+    nuevoy=int(ecanal.shape[0])
+    nuevox=int(ecanal.shape[1])
+    #automata crear estructuras
+    matrizI=np.copy(ecanal)
+    matrizA=np.copy(ecanal)
+    for y in range(0,nuevoy):
+        for x in range(0,nuevox):
+            #matrizA[y,x]=aleatorio(0,1)
+            if y % 2 == 0 or x % 2 == 0:
+                matrizA[y,x]=1*255
+            else:
+                matrizA[y,x]=0*255
+    matrizI_AB=ampliarBordesImagen(matrizI, 1)
+    #automata iterar maxsec veces
+    for ra in range(0,maxsec):
+        plt.imsave(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_'+str(ra)+'.png',matrizA,cmap='gray',vmin=0, vmax=255)
+        cop_matrizA=np.copy(matrizA)
+        matrizA_AB=ampliarBordesImagen(matrizA, 1)
+        for y in range(0,nuevoy):
+            for x in range(0,nuevox):
+                numsimilares=8-contarVecinasSimilares(matrizI_AB,nuevoy,nuevox,y,x,3)
+                numvivas=contarVecinasVivas(matrizA_AB,nuevoy,nuevox,y,x)+numsimilares
+                if(matrizA[y,x]==VG_VIVO):
+                    if numvivas<2:
+                        if numsimilares>3:
+                            cop_matrizA[y,x]=VG_MUERTO
+                    else:
+                        if(numvivas==2 or numvivas==3):
+                            pass
+                        else:
+                            if numsimilares>3:
+                                cop_matrizA[y,x]=VG_MUERTO
+                else:
+                    if numvivas==3:
+                        if numsimilares<=3:
+                            cop_matrizA[y,x]=VG_VIVO
+        matrizA=np.copy(cop_matrizA)
+    return matrizA
+
+def combinar_automata6varRGB(xposini,xposfin,xcarpeta_mapimg,xnom_mapimg,xcarpeta_mapimg_inv,xnom_mapimg_inv,xcarpeta_mapimg_comb,xnom_mapimg_comb):
+    for i in range(xposini,xposfin):
+        xmapa=cv2.imread(xcarpeta_mapimg+'/'+getNombreArchivo(i)+xnom_mapimg+'.png')
+        xmapa=cv2.cvtColor(xmapa, cv2.COLOR_BGR2RGB)
+
+        xmapa_inv=cv2.imread(xcarpeta_mapimg_inv+'/'+getNombreArchivo(i)+xnom_mapimg_inv+'.png')
+        xmapa_inv=cv2.cvtColor(xmapa_inv, cv2.COLOR_BGR2RGB)
+
+        matrizA_R = get_combinar_automata6varCanal(xmapa[:,:,0],xmapa_inv[:,:,0])
+        matrizA_G = get_combinar_automata6varCanal(xmapa[:,:,1],xmapa_inv[:,:,1])
+        matrizA_B = get_combinar_automata6varCanal(xmapa[:,:,2],xmapa_inv[:,:,2])
+
+        ximagen=np.zeros((matrizA_R.shape[0],matrizA_R.shape[1],3))
+        ximagen[:,:,0]=matrizA_R[:,:]
+        ximagen[:,:,1]=matrizA_G[:,:]
+        ximagen[:,:,2]=matrizA_B[:,:]
+        yimagen=ximagen.astype(np.uint8)
+
+        #plt.imsave(xcarpeta_mapimg_comb+'/'+getNombreArchivo(i)+xnom_mapimg_comb+'.png',matrizA,cmap='gray',vmin=0, vmax=255)
+        plt.imsave(xcarpeta_mapimg_comb+'/'+getNombreArchivo(i)+xnom_mapimg_comb+'.png',yimagen)
+
+def get_combinar_automata6varCanal(xmapa,xmapa_inv):
+    nuevoy=int(xmapa.shape[0])
+    nuevox=int(xmapa.shape[1])
+    matrizA=np.copy(xmapa)
+    matrizB_AB=ampliarBordesImagen(xmapa, 1)
+    matrizC_AB=ampliarBordesImagen(xmapa_inv, 1)
+    for y in range(0,nuevoy):
+        for x in range(0,nuevox):
+            numvivasB=contarVecinasVivas(matrizB_AB,nuevoy,nuevox,y,x)
+            numvivasC=contarVecinasVivas(matrizC_AB,nuevoy,nuevox,y,x)
+            factorB=numvivasB/8
+            factorC=numvivasC/8
+            rango=((factorC-factorB)+1)/2
+            #num=rango*255
+            #decimales=num-round(num)
+            #rango2=((decimales*1000))/999
+            matrizA[y,x]=int(rango*255)
+    matrizA = cv2.resize(matrizA, dsize=(int(nuevox/2),int(nuevoy/2)), interpolation=cv2.INTER_CUBIC)
+    return matrizA
+
+def mostrar_imagen_secuencia_acRGB(xposini,xposfin,xcarpeta_secuenciaimg,xnom_secimg,maxsec):
+    for i in range(xposini,xposfin):
+        tablagsec=plt.figure(figsize=(15, 15))
+        for ra in range(0,maxsec):
+            xmapa=cv2.imread(xcarpeta_secuenciaimg+'/'+getNombreArchivo(i)+xnom_secimg+'_'+str(ra)+'.png')
+            xmapa=cv2.cvtColor(xmapa, cv2.COLOR_BGR2RGB)
+            c1=tablagsec.add_subplot(1,maxsec,ra+1)
+            plt.title(getNombreArchivo(i)+xnom_secimg+'_'+str(ra)+'.png')
+            plt.imshow(xmapa)
+#-----------------------------------------------------------------------------------------------------------
+
+
+
+
 #-------------------------FUNCIONES VARIADAS DE ESTRUCTURAS DE DATOS--------------------------------------
 #Unir img1 con img2 en una sola estructura de datos. Se usa para las entradas que reciben dos matrices unidas
 #Ambas imagenes deben tener dimension (y,x,1)
 #Combinar forma de (...,TAM_PARCHE,TAM_PARCHE,1) (...,TAM_PARCHE,TAM_PARCHE,1) a (...,TAM_PARCHE,TAM_PARCHE,2)
-def unirDatosImagen(data_img1,data_img2):    
+def unirDatosImagen(data_img1,data_img2):
     #tqdata=np.zeros((len(data_img1),TAM_PARCHE,TAM_PARCHE,2))
     #for k in range(0,len(data_img1)):
     #    for t in range(0,TAM_PARCHE):
@@ -371,7 +582,7 @@ def unirDatosImagen(data_img1,data_img2):
 def unirDatosImagen3(data_img1,data_img2,data_img3):
     #return unirDatosImagen(unirDatosImagen(data_img1,data_img2),data_img3)
     return np.concatenate((data_img1,data_img2,data_img3),-1)
-    
+
 #Construir conjunto de datos de parches para el ENTRENAMIENDO del modelo
 #Dada una lista de pares de imagenes de baja y alta calidad construye los parches de TAM_PARCHExTAM_PARCHE pixeles
 def construirConjuntoParches(xposini, xposfin, xcarpeta_img, xnom_img_lista):
@@ -457,10 +668,19 @@ def unir_parches_en_imagen(decoded_imgs,img_reducida):
             #plt.imsave('general100resultado2x/im_'+cadCeros(str(i))+xnom_img_reconstruida+str(k)+'.png',decoded_imgs[k]*255,cmap='gray')
             for ti in range(0,TAM_PARCHE):
                 for tj in range(0,TAM_PARCHE):
-                    #Los pixeles estan normalizada entonces, convertirlos a (0,255)
-                    ximagen[(alto*y)+ti,(ancho*x)+tj]=(decoded_imgs[k,ti,tj]*127.5)+127.5
+                    #Los pixeles estan normalizada entre -1 a 1 entonces, convertirlos a (0,255)
+                    px=(decoded_imgs[k,ti,tj]*127.5)+127.5
+                    #Si el modelo esta entrenado correctamente, entonces no seria necesaria la siguiente validación
+                    #Pero para evitar posibles errores se valida la conversión
+                    if px<0:
+                        px=0
+                    if px>255:
+                        px=255
+                    ximagen[(alto*y)+ti,(ancho*x)+tj]=px
             k=k+1
-    return ximagen
+    #return ximagen
+    return ximagen.astype(np.uint8)
+
 #Hace lo mismo que la anterior funcion pero en imagenes a color
 def unir_parches_en_imagenColor(decoded_imgs,img_reducida):
     ancho=TAM_PARCHE
@@ -474,12 +694,32 @@ def unir_parches_en_imagenColor(decoded_imgs,img_reducida):
             #plt.imsave('general100resultado2x/im_'+cadCeros(str(i))+xnom_img_reconstruida+str(k)+'.png',decoded_imgs[k]*255,cmap='gray')
             for ti in range(0,TAM_PARCHE):
                 for tj in range(0,TAM_PARCHE):
-                    #Los pixeles estan normalizada entonces, convertirlos a (0,255)
-                    ximagen[(alto*y)+ti,(ancho*x)+tj,0]=(decoded_imgs[k,ti,tj,0]*127.5)+127.5
-                    ximagen[(alto*y)+ti,(ancho*x)+tj,1]=(decoded_imgs[k,ti,tj,1]*127.5)+127.5
-                    ximagen[(alto*y)+ti,(ancho*x)+tj,2]=(decoded_imgs[k,ti,tj,2]*127.5)+127.5
+                    #Los pixeles estan normalizada entre -1 a 1 entonces, convertirlos a (0,255)
+                    px0=(decoded_imgs[k,ti,tj,0]*127.5)+127.5
+                    #Si el modelo esta entrenado correctamente, entonces no seria necesaria la siguiente validación
+                    #Pero para evitar posibles errores se valida la conversión
+                    if px0<0:
+                        px0=0
+                    if px0>255:
+                        px0=255
+                    ximagen[(alto*y)+ti,(ancho*x)+tj,0]=px0
+
+                    px1=(decoded_imgs[k,ti,tj,1]*127.5)+127.5
+                    if px1<0:
+                        px1=0
+                    if px1>255:
+                        px1=255
+                    ximagen[(alto*y)+ti,(ancho*x)+tj,1]=px1
+
+                    px2=(decoded_imgs[k,ti,tj,2]*127.5)+127.5
+                    if px2<0:
+                        px2=0
+                    if px2>255:
+                        px2=255
+                    ximagen[(alto*y)+ti,(ancho*x)+tj,2]=px2
             k=k+1
-    return ximagen
+    #return ximagen
+    return ximagen.astype(np.uint8)
 
 #-------------------------PRIMERA RED NEURONAL: CONVERTIR IMAGEN A ESTRUTURAS DE BORDE
 def aplicar_modelo_a_imagenes(xmodelo,xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_img_rec,xnom_img_reconstruida):
@@ -489,8 +729,11 @@ def aplicar_modelo_a_imagenes(xmodelo,xposini,xposfin,xcarpeta_img,xnom_img,xcar
         xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizar(img_reducida,False)
         #Aplicar modelo RNA
         decoded_imgs = xmodelo(xdata_img_reducida_array_nor).numpy()
+        #ximagen=unir_parches_en_imagen(decoded_imgs[:,:,:,0],img_reducida)
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'_pred1.png',ximagen,cmap='gray')
+
+        #ximagen=unir_parches_en_imagen(decoded_imgs[:,:,:,1],img_reducida)
         ximagen=unir_parches_en_imagen(decoded_imgs,img_reducida)
-        #plt.imshow(ximagen, cmap='gray')
         plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',ximagen,cmap='gray')
 
 def aplicar_modelo_a_imagenesColor(xmodelo,xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_img_rec,xnom_img_reconstruida):
@@ -500,9 +743,15 @@ def aplicar_modelo_a_imagenesColor(xmodelo,xposini,xposfin,xcarpeta_img,xnom_img
         xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizarColor(img_reducida)
         #Aplicar modelo RNA
         decoded_imgs = xmodelo(xdata_img_reducida_array_nor).numpy()
-        ximagen=unir_parches_en_imagen(decoded_imgs,img_reducida[:,:,0])
+
+        #ximagen=unir_parches_en_imagenColor(decoded_imgs[:,:,:,0:3],img_reducida[:,:,0])
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'_pred1.png',ximagen)
+
+        #ximagen=unir_parches_en_imagenColor(decoded_imgs[:,:,:,3:6],img_reducida[:,:,0])
+        ximagen=unir_parches_en_imagenColor(decoded_imgs,img_reducida[:,:,0])
         #plt.imshow(ximagen, cmap='gray')
-        plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',ximagen,cmap='gray')
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',ximagen,cmap='gray')
+        plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',ximagen)
 #-----------------------------------------------------------------------------------------------------------
 
 
@@ -511,31 +760,47 @@ def aplicar_modeloAC_a_imagenes(xmodelo,xposini,xposfin,xcarpeta_img,xnom_img,xc
     for i in range(xposini,xposfin):
         img_reducida = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
         img_reducida = cv2.cvtColor(img_reducida, cv2.COLOR_BGR2GRAY)
+        #img_pred1 = cv2.imread(xcarpeta_img_mapa+'/'+getNombreArchivo(i)+xnom_img_mapa+'_pred1.png')
+        #img_pred1 = cv2.cvtColor(img_pred1, cv2.COLOR_BGR2GRAY)
         img_mapa = cv2.imread(xcarpeta_img_mapa+'/'+getNombreArchivo(i)+xnom_img_mapa+'.png')
         img_mapa = cv2.cvtColor(img_mapa, cv2.COLOR_BGR2GRAY)
         #0,40,80
         #tablag=plt.figure(figsize=(12, 12))
         #img_mapa=ajustar_mapa_borde(img_mapa,80)
         #plt.imshow(img_mapa,cmap='gray')
-        xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizar(img_reducida)        
+        xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizar(img_reducida)
         xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)
+        #xdata_img_pred1_array_nor=convertir_imagen_a_parches_normalizar(img_pred1)
+
         #Unir forma de (...,TAM_PARCHE,TAM_PARCHE,1)+(...,TAM_PARCHE,TAM_PARCHE,1) a (...,TAM_PARCHE,TAM_PARCHE,2)
         xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+        #xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_pred1_array_nor,xdata_img_mapa_array_nor)
+
         #Aplicar modelo RNA
+        #[decoded_imgs0,decoded_imgs1] = xmodelo(xtqdata_img_RyM_array_nor)
+        #decoded_imgs0=decoded_imgs0.numpy()
+        #decoded_imgs1=decoded_imgs1.numpy()
+        #ximagen0=unir_parches_en_imagen(decoded_imgs0,img_reducida)
+        #ximagen=unir_parches_en_imagen(decoded_imgs1,img_reducida)
         decoded_imgs = xmodelo(xtqdata_img_RyM_array_nor).numpy()
         ximagen=unir_parches_en_imagen(decoded_imgs,img_reducida)
+
+
         #Aplicar el modelo a la imagen con bordes ampliados
         ximagenDD=get_aplicar_modeloAC_a_imagenes_DD(xmodelo,img_reducida,img_mapa)
+        #ximagenDD=get_aplicar_modeloAC_a_imagenes_DD(xmodelo,img_pred1,img_mapa)
         #Ajustes de brillo y bordes
-        
+
         ximagen=ajustarBrillo(ximagen,img_mapa)
         ximagen=difuminarBordes(ximagen,img_mapa)
         ximagen=ajustarBrillo(ximagen,img_mapa)
-        ximagen=difuminarBordes(ximagen,img_mapa)        
+        ximagen=difuminarBordes(ximagen,img_mapa)
         ximagen=combinarBordesDD(ximagen,ximagenDD)
         ximagen=combinarBordesDD(ximagen,ximagenDD)
-        
-        plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',ximagen,cmap='gray')        
+
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'0.png',ximagen0,cmap='gray')
+        plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',ximagen,cmap='gray')
+
 
 
 def aplicar_modeloAC_a_imagenesColor(xmodelo,xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_img_mapa,xnom_img_mapa,xcarpeta_img_rec,xnom_img_reconstruida):
@@ -544,35 +809,49 @@ def aplicar_modeloAC_a_imagenesColor(xmodelo,xposini,xposfin,xcarpeta_img,xnom_i
         img_reducida = cv2.cvtColor(img_reducida, cv2.COLOR_BGR2RGB)
         #print('Paso 1:')
         #print(img_reducida.shape)
+        #img_pred1 = cv2.imread(xcarpeta_img_mapa+'/'+getNombreArchivo(i)+xnom_img_mapa+'_pred1.png')
+        #img_pred1 = cv2.cvtColor(img_pred1, cv2.COLOR_BGR2RGB)
         img_mapa = cv2.imread(xcarpeta_img_mapa+'/'+getNombreArchivo(i)+xnom_img_mapa+'.png')
-        img_mapa = cv2.cvtColor(img_mapa, cv2.COLOR_BGR2GRAY)
+        img_mapa = cv2.cvtColor(img_mapa, cv2.COLOR_BGR2RGB)
         #0,40,80
         #tablag=plt.figure(figsize=(12, 12))
         #img_mapa=ajustar_mapa_borde(img_mapa,40)
         #plt.imshow(img_mapa,cmap='gray')
-        xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizarColor(img_reducida)        
-        xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)
+        xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizarColor(img_reducida)
+        xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizarColor(img_mapa)
+        #xdata_img_pred1_array_nor=convertir_imagen_a_parches_normalizarColor(img_pred1)
+
         #Unir forma de (...,TAM_PARCHE,TAM_PARCHE,3)+(...,TAM_PARCHE,TAM_PARCHE,1) a (...,TAM_PARCHE,TAM_PARCHE,4)
         xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+        #xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_pred1_array_nor,xdata_img_mapa_array_nor)
+
         #Aplicar modelo RNA
+        #[decoded_imgs0,decoded_imgs1] = xmodelo(xtqdata_img_RyM_array_nor)
+        #decoded_imgs0=decoded_imgs0.numpy()
+        #decoded_imgs1=decoded_imgs1.numpy()
+        #ximagen0=unir_parches_en_imagenColor(decoded_imgs0,img_reducida[:,:,0])
+        #ximagen=unir_parches_en_imagenColor(decoded_imgs1,img_reducida[:,:,0])
         decoded_imgs = xmodelo(xtqdata_img_RyM_array_nor).numpy()
         ximagen=unir_parches_en_imagenColor(decoded_imgs,img_reducida[:,:,0])
+
+
         #Aplicar el modelo a la imagen con bordes ampliados
         ximagenDD=get_aplicar_modeloAC_a_imagenes_DDColor(xmodelo,img_reducida,img_mapa)
+        #ximagenDD=get_aplicar_modeloAC_a_imagenes_DDColor(xmodelo,img_pred1,img_mapa)
         #Ajustes de brillo y bordes
-        ximagenR=ajustarBrillo(ximagen[:,:,0],img_mapa)
-        ximagenR=difuminarBordes(ximagenR,img_mapa)
-        ximagenR=combinarBordesDD(ximagenR,ximagenDD[:,:,0])        
-        ximagenG=ajustarBrillo(ximagen[:,:,1],img_mapa)
-        ximagenG=difuminarBordes(ximagenG,img_mapa)
+        ximagenR=ajustarBrillo(ximagen[:,:,0],img_mapa[:,:,0])
+        ximagenR=difuminarBordes(ximagenR,img_mapa[:,:,0])
+        ximagenR=combinarBordesDD(ximagenR,ximagenDD[:,:,0])
+        ximagenG=ajustarBrillo(ximagen[:,:,1],img_mapa[:,:,1])
+        ximagenG=difuminarBordes(ximagenG,img_mapa[:,:,1])
         ximagenG=combinarBordesDD(ximagenG,ximagenDD[:,:,1])
-        ximagenB=ajustarBrillo(ximagen[:,:,2],img_mapa)
-        ximagenB=difuminarBordes(ximagenB,img_mapa)
+        ximagenB=ajustarBrillo(ximagen[:,:,2],img_mapa[:,:,2])
+        ximagenB=difuminarBordes(ximagenB,img_mapa[:,:,2])
         ximagenB=combinarBordesDD(ximagenB,ximagenDD[:,:,2])
 
         #ximagenR=ximagenR.reshape((ximagenR.shape[0],ximagenR.shape[1],1))
         #ximagenG=ximagenG.reshape((ximagenG.shape[0],ximagenG.shape[1],1))
-        #ximagenB=ximagenB.reshape((ximagenB.shape[0],ximagenB.shape[1],1))    
+        #ximagenB=ximagenB.reshape((ximagenB.shape[0],ximagenB.shape[1],1))
         #ximagen=unirDatosImagen3(ximagenR,ximagenG,ximagenB)
         #yimagen=ximagen.astype(np.uint8)
         #Unir los 3 canales de la imagen
@@ -581,6 +860,8 @@ def aplicar_modeloAC_a_imagenesColor(xmodelo,xposini,xposfin,xcarpeta_img,xnom_i
         ximagen[:,:,1]=ximagenG[:,:]
         ximagen[:,:,2]=ximagenB[:,:]
         yimagen=ximagen.astype(np.uint8)
+
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'0.png',ximagen0)
         plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',yimagen)
 
 
@@ -613,36 +894,36 @@ def ajustarBrillo(ximagen,img_mapa):
                 for ti in range(0,TAM_PARCHE):
                     #Parche actual, columna 0
                     tj=0
-                    pixel=ximagen[(alto*y)+ti,(ancho*x)+tj]
+                    pixel=int(ximagen[(alto*y)+ti,(ancho*x)+tj])
                     #Parche anterior izquierdo, columna 63
-                    pixel2=ximagen[(alto*y)+ti,(ancho*x)+tj-1]
+                    pixel2=int(ximagen[(alto*y)+ti,(ancho*x)+tj-1])
                     #xlistaA.append(pixel2-pixel)
                     pixel_mapa=img_mapa[(alto*y)+ti,(ancho*x)+tj]/255
                     ajusteA=ajusteA+int((pixel2-pixel)*pixel_mapa)
                     #ajusteA=ajusteA+(pixel2-pixel)
                 #ajusteA=np.sum(xlistaA)/TAM_PARCHE
                 ajusteA=ajusteA/TAM_PARCHE
-                
+
             ajusteB=0
             #xlistaB=list()
             if(y>=1):
                 for tj in range(0,TAM_PARCHE):
                     #Parche actual, fila 0
                     ti=0
-                    pixel=ximagen[(alto*y)+ti,(ancho*x)+tj]
+                    pixel=int(ximagen[(alto*y)+ti,(ancho*x)+tj])
                     #Parche anterior superior, fila 63
-                    pixel2=ximagen[(alto*y)+ti-1,(ancho*x)+tj]
+                    pixel2=int(ximagen[(alto*y)+ti-1,(ancho*x)+tj])
                     #xlistaB.append(pixel2-pixel)
-                    
+
                     pixel_mapa=img_mapa[(alto*y)+ti,(ancho*x)+tj]/255
                     ajusteB=ajusteB+int((pixel2-pixel)*pixel_mapa)
                     #ajusteB=ajusteB+(pixel2-pixel)
                 #ajusteB=np.sum(xlistaB)/TAM_PARCHE
                 ajusteB=ajusteB/TAM_PARCHE
-            
+
             ajuste=int((ajusteA+ajusteB)/2)
-            
-                
+
+
             for ti in range(0,TAM_PARCHE):
                 for tj in range(0,TAM_PARCHE):
                     pixel=ximagen[(alto*y)+ti,(ancho*x)+tj]
@@ -681,54 +962,54 @@ def difuminarBordes(ximagen,img_mapa):
             xmat_deg_img[(alto*y)+0:(alto*y)+borde3,(ancho*x)+TAM_PARCHE-borde3:(ancho*x)+TAM_PARCHE]=cv2.flip(np.copy(xmat_deg4[0:borde3,0:borde3]),1)
             xmat_deg_img[(alto*y)+TAM_PARCHE-borde3:(alto*y)+TAM_PARCHE,(ancho*x)+0:(ancho*x)+borde3]=cv2.flip(np.copy(xmat_deg4[0:borde3,0:borde3]),0)
             xmat_deg_img[(alto*y)+TAM_PARCHE-borde3:(alto*y)+TAM_PARCHE,(ancho*x)+TAM_PARCHE-borde3:(ancho*x)+TAM_PARCHE]=cv2.flip(np.copy(xmat_deg4[0:borde3,0:borde3]),-1)
-    
+
     for y in range(1,nseg_vert-1):
         for x in range(1,nseg_horiz-1):
             xlistaA=list()
             for ti in range(0,TAM_PARCHE):
                 #Parche actual, columna 0
                 tj=0
-                pixel=ximagenAB[(alto*y)+ti,(ancho*x)+tj]
+                pixel=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj])
                 pixel_mapa=img_mapaAB[(alto*y)+ti,(ancho*x)+tj]/255
                 #Parche anterior izquierdo, columna 127
-                pixel2=ximagenAB[(alto*y)+ti,(ancho*x)+tj-1]
+                pixel2=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj-1])
                 pixel_mapa2=img_mapaAB[(alto*y)+ti,(ancho*x)+tj-1]/255
                 xlistaA.append((pixel2-pixel)*pixel_mapa*pixel_mapa2)
-            
+
             xlistaB=list()
             for tj in range(0,TAM_PARCHE):
                 #Parche actual, fila 0
                 ti=0
-                pixel=ximagenAB[(alto*y)+ti,(ancho*x)+tj]
+                pixel=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj])
                 pixel_mapa=img_mapaAB[(alto*y)+ti,(ancho*x)+tj]/255
                 #Parche anterior superior, fila 127
-                pixel2=ximagenAB[(alto*y)+ti-1,(ancho*x)+tj]
+                pixel2=int(ximagenAB[(alto*y)+ti-1,(ancho*x)+tj])
                 pixel_mapa2=img_mapaAB[(alto*y)+ti-1,(ancho*x)+tj]/255
                 xlistaB.append((pixel2-pixel)*pixel_mapa*pixel_mapa2)
-            
+
             xlistaC=list()
             for ti in range(0,TAM_PARCHE):
                 #Parche actual, columna 127
                 tj=127
-                pixel=ximagenAB[(alto*y)+ti,(ancho*x)+tj]
+                pixel=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj])
                 pixel_mapa=img_mapaAB[(alto*y)+ti,(ancho*x)+tj]/255
                 #Parche anterior derecho, columna 0
-                pixel2=ximagenAB[(alto*y)+ti,(ancho*x)+tj+1]
+                pixel2=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj+1])
                 pixel_mapa2=img_mapaAB[(alto*y)+ti,(ancho*x)+tj+1]/255
                 xlistaC.append((pixel2-pixel)*pixel_mapa*pixel_mapa2)
-            
+
             xlistaD=list()
             for tj in range(0,TAM_PARCHE):
                 #Parche actual, fila 127
                 ti=127
-                pixel=ximagenAB[(alto*y)+ti,(ancho*x)+tj]
+                pixel=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj])
                 pixel_mapa=img_mapaAB[(alto*y)+ti,(ancho*x)+tj]/255
                 #Parche anterior inferior, fila 0
-                pixel2=ximagenAB[(alto*y)+ti+1,(ancho*x)+tj]
+                pixel2=int(ximagenAB[(alto*y)+ti+1,(ancho*x)+tj])
                 pixel_mapa2=img_mapaAB[(alto*y)+ti+1,(ancho*x)+tj]/255
                 xlistaD.append((pixel2-pixel)*pixel_mapa*pixel_mapa2)
-            
-            
+
+
             #-------------------------------------------------------------
             #Aplicar a la region lateral izquierda del parche
             for tj in range(0,borde):
@@ -737,7 +1018,7 @@ def difuminarBordes(ximagen,img_mapa):
                     pixel_mapa=img_mapaAB[(alto*y)+ti,(ancho*x)+tj]/255
                     ajuste_degradado=int(pixel_mapa*(ajuste_degradado))
 
-                    pixel=ximagenAB[(alto*y)+ti,(ancho*x)+tj]                    
+                    pixel=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj])
                     if((pixel+ajuste_degradado<=255) and (pixel+ajuste_degradado>=0)):
                         pixel=pixel+ajuste_degradado
                     if pixel>255:
@@ -745,7 +1026,7 @@ def difuminarBordes(ximagen,img_mapa):
                     if pixel<0:
                         pixel=0
                     ximagenRES[(alto*y)+ti,(ancho*x)+tj]=pixel
-                    
+
             #Aplicar a la region superior del parche
             for ti in range(0,borde):
                 for tj in range(ti,TAM_PARCHE-ti):
@@ -753,7 +1034,7 @@ def difuminarBordes(ximagen,img_mapa):
                     pixel_mapa=img_mapaAB[(alto*y)+ti,(ancho*x)+tj]/255
                     ajuste_degradado=int(pixel_mapa*(ajuste_degradado))
 
-                    pixel=ximagenAB[(alto*y)+ti,(ancho*x)+tj]
+                    pixel=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj])
                     if((pixel+ajuste_degradado<=255) and (pixel+ajuste_degradado>=0)):
                         pixel=pixel+ajuste_degradado
                     if pixel>255:
@@ -761,7 +1042,7 @@ def difuminarBordes(ximagen,img_mapa):
                     if pixel<0:
                         pixel=0
                     ximagenRES[(alto*y)+ti,(ancho*x)+tj]=pixel
-            
+
             #Aplicar a la region lateral derecha del parche
             for tj in range(TAM_PARCHE-borde,TAM_PARCHE):
                 for ti in range(TAM_PARCHE-tj,tj):
@@ -769,7 +1050,7 @@ def difuminarBordes(ximagen,img_mapa):
                     pixel_mapa=img_mapaAB[(alto*y)+ti,(ancho*x)+tj]/255
                     ajuste_degradado=int(pixel_mapa*(ajuste_degradado))
 
-                    pixel=ximagenAB[(alto*y)+ti,(ancho*x)+tj]                    
+                    pixel=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj])
                     if((pixel+ajuste_degradado<=255) and (pixel+ajuste_degradado>=0)):
                         pixel=pixel+ajuste_degradado
                     if pixel>255:
@@ -777,7 +1058,7 @@ def difuminarBordes(ximagen,img_mapa):
                     if pixel<0:
                         pixel=0
                     ximagenRES[(alto*y)+ti,(ancho*x)+tj]=pixel
-                    
+
             #Aplicar a la region inferior del parche
             for ti in range(TAM_PARCHE-borde,TAM_PARCHE):
                 for tj in range(TAM_PARCHE-ti,ti):
@@ -785,7 +1066,7 @@ def difuminarBordes(ximagen,img_mapa):
                     pixel_mapa=img_mapaAB[(alto*y)+ti,(ancho*x)+tj]/255
                     ajuste_degradado=int(pixel_mapa*(ajuste_degradado))
 
-                    pixel=ximagenAB[(alto*y)+ti,(ancho*x)+tj]
+                    pixel=int(ximagenAB[(alto*y)+ti,(ancho*x)+tj])
                     if((pixel+ajuste_degradado<=255) and (pixel+ajuste_degradado>=0)):
                         pixel=pixel+ajuste_degradado
                     if pixel>255:
@@ -793,7 +1074,7 @@ def difuminarBordes(ximagen,img_mapa):
                     if pixel<0:
                         pixel=0
                     ximagenRES[(alto*y)+ti,(ancho*x)+tj]=pixel
-    
+
     #-------------Para mostrar la mascara de difuminado de bordes
     #tablag=plt.figure(figsize=(10, 10))
     #c1=tablag.add_subplot(1,2,1)
@@ -801,8 +1082,10 @@ def difuminarBordes(ximagen,img_mapa):
     #c1=tablag.add_subplot(1,2,2)
     #xmat_deg_img=recortarBordesImagen(xmat_deg_img,TAM_PARCHE)
     #plt.imshow(xmat_deg_img, cmap='gray')
-    
+
     return recortarBordesImagen(ximagenRES,TAM_PARCHE)
+
+
 #-----------------Tercer filtro de combinacion de parches----------------
 #Ampliar bordes
 def ampliarBordesImagen(img, desplazar):
@@ -822,7 +1105,7 @@ def ampliarBordesImagen(img, desplazar):
     #esquina lateral
     ximagen2=cv2.flip(np.copy(img[img.shape[0]-desy:img.shape[0],img.shape[1]-desx:img.shape[1]]),-1)
     ximagen[img.shape[0]+desy:img.shape[0]+desy+desy,img.shape[1]+desx:img.shape[1]+desx+desx]=np.copy(ximagen2[0:desplazar,0:desplazar])
-    
+
     #linea horizontal superior
     ximagen2=cv2.flip(np.copy(img[0:desplazar,0:img.shape[1]]),0)
     ximagen[0:desy,desx:desx+img.shape[1]]=np.copy(ximagen2[0:desplazar,0:img.shape[1]])
@@ -838,30 +1121,37 @@ def ampliarBordesImagen(img, desplazar):
     #Contenido
     ximagen2=np.copy(img[0:img.shape[0],0:img.shape[1]])
     ximagen[desy:desy+img.shape[0],desx:desx+img.shape[1]]=np.copy(ximagen2[0:img.shape[0],0:img.shape[1]])
-    
+
     return ximagen
 #Recortar bordes
 def recortarBordesImagen(img, desplazar):
     desy=desplazar
     desx=desplazar
     #Crear imagen quitando a cada lado el desplazamiento
-    #ximagen=np.zeros((img.shape[0]-(desplazar*2),img.shape[1]-(desplazar*2)))    
-    ximagen2=np.copy(img[0+desy:img.shape[0]-desy,0+desx:img.shape[1]-desx])    
+    #ximagen=np.zeros((img.shape[0]-(desplazar*2),img.shape[1]-(desplazar*2)))
+    ximagen2=np.copy(img[0+desy:img.shape[0]-desy,0+desx:img.shape[1]-desx])
     return ximagen2
 #Retorna una imagen aplicando el modelo de la imagen con border Ampliados y Reducidos
 def get_aplicar_modeloAC_a_imagenes_DD(xmodelo,img_reducida,img_mapa):
-    img_reducida=ampliarBordesImagen(img_reducida, TAM_PARCHE_MITAD)        
+    img_reducida=ampliarBordesImagen(img_reducida, TAM_PARCHE_MITAD)
     img_mapa=ampliarBordesImagen(img_mapa, TAM_PARCHE_MITAD)
     xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizar(img_reducida)
     xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)
     #Unir forma de (...,TAM_PARCHE,TAM_PARCHE,1)+(...,TAM_PARCHE,TAM_PARCHE,1) a (...,TAM_PARCHE,TAM_PARCHE,2)
     xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+
     #Aplicar modelo RNA
+    #[decoded_imgs0,decoded_imgs1] = xmodelo(xtqdata_img_RyM_array_nor)
+    #decoded_imgs0=decoded_imgs0.numpy()
+    #decoded_imgs1=decoded_imgs1.numpy()
+    #ximagen0=unir_parches_en_imagen(decoded_imgs0,img_reducida)
+    #ximagen=unir_parches_en_imagen(decoded_imgs1,img_reducida)
     decoded_imgs = xmodelo(xtqdata_img_RyM_array_nor).numpy()
     ximagen=unir_parches_en_imagen(decoded_imgs,img_reducida)
+
     #Ajustes de brillo y bordes
     ximagen=ajustarBrillo(ximagen,img_mapa)
-    ximagen=difuminarBordes(ximagen,img_mapa)        
+    ximagen=difuminarBordes(ximagen,img_mapa)
 
     ximagen=recortarBordesImagen(ximagen, TAM_PARCHE_MITAD)
     return ximagen
@@ -888,7 +1178,7 @@ def combinarBordesDD(ximagen,ximagenAR):
             xmat_deg_img[(alto*y)+0:(alto*y)+borde,(ancho*x)+TAM_PARCHE-borde:(ancho*x)+TAM_PARCHE]=cv2.flip(np.copy(xmat_deg[0:borde,0:borde]),1)
             xmat_deg_img[(alto*y)+TAM_PARCHE-borde:(alto*y)+TAM_PARCHE,(ancho*x)+0:(ancho*x)+borde]=cv2.flip(np.copy(xmat_deg[0:borde,0:borde]),0)
             xmat_deg_img[(alto*y)+TAM_PARCHE-borde:(alto*y)+TAM_PARCHE,(ancho*x)+TAM_PARCHE-borde:(ancho*x)+TAM_PARCHE]=cv2.flip(np.copy(xmat_deg[0:borde,0:borde]),-1)
-    
+
     for y in range(0,nseg_vert):
         for x in range(0,nseg_horiz):
             #Aplicar a la region superior del parche
@@ -915,31 +1205,45 @@ def get_aplicar_modeloAC_a_imagenes_DDColor(xmodelo,img_reducida,img_mapa):
     img_reducida_r=ampliarBordesImagen(img_reducida[:,:,0], TAM_PARCHE_MITAD)
     img_reducida_g=ampliarBordesImagen(img_reducida[:,:,1], TAM_PARCHE_MITAD)
     img_reducida_b=ampliarBordesImagen(img_reducida[:,:,2], TAM_PARCHE_MITAD)
-
     img_reducida_r=img_reducida_r.reshape((img_reducida_r.shape[0],img_reducida_r.shape[1],1))
     img_reducida_g=img_reducida_g.reshape((img_reducida_g.shape[0],img_reducida_g.shape[1],1))
     img_reducida_b=img_reducida_b.reshape((img_reducida_b.shape[0],img_reducida_b.shape[1],1))
     img_reducida=unirDatosImagen3(img_reducida_r,img_reducida_g,img_reducida_b)
-    img_mapa=ampliarBordesImagen(img_mapa, TAM_PARCHE_MITAD)
-    
+
+    img_mapa_r=ampliarBordesImagen(img_mapa[:,:,0], TAM_PARCHE_MITAD)
+    img_mapa_g=ampliarBordesImagen(img_mapa[:,:,1], TAM_PARCHE_MITAD)
+    img_mapa_b=ampliarBordesImagen(img_mapa[:,:,2], TAM_PARCHE_MITAD)
+    img_mapa_r=img_mapa_r.reshape((img_mapa_r.shape[0],img_mapa_r.shape[1],1))
+    img_mapa_g=img_mapa_g.reshape((img_mapa_g.shape[0],img_mapa_g.shape[1],1))
+    img_mapa_b=img_mapa_b.reshape((img_mapa_b.shape[0],img_mapa_b.shape[1],1))
+    img_mapa=unirDatosImagen3(img_mapa_r,img_mapa_g,img_mapa_b)
+
+
     xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizarColor(img_reducida)
-    xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)
+    xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizarColor(img_mapa)
     #Unir forma de (...,TAM_PARCHE,TAM_PARCHE,3)+(...,TAM_PARCHE,TAM_PARCHE,1) a (...,TAM_PARCHE,TAM_PARCHE,4)
     xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+
     #Aplicar modelo RNA
+    #[decoded_imgs0,decoded_imgs1] = xmodelo(xtqdata_img_RyM_array_nor)
+    #decoded_imgs0=decoded_imgs0.numpy()
+    #decoded_imgs1=decoded_imgs1.numpy()
+    #ximagen0=unir_parches_en_imagenColor(decoded_imgs0,img_reducida[:,:,0])
+    #ximagen=unir_parches_en_imagenColor(decoded_imgs1,img_reducida[:,:,0])
     decoded_imgs = xmodelo(xtqdata_img_RyM_array_nor).numpy()
     ximagen=unir_parches_en_imagenColor(decoded_imgs,img_reducida[:,:,0])
+
     #Ajustes de brillo y bordes
-    ximagen_r=ajustarBrillo(ximagen[:,:,0],img_mapa)
-    ximagen_r=difuminarBordes(ximagen_r,img_mapa)
+    ximagen_r=ajustarBrillo(ximagen[:,:,0],img_mapa[:,:,0])
+    ximagen_r=difuminarBordes(ximagen_r,img_mapa[:,:,0])
     ximagen_r=recortarBordesImagen(ximagen_r, TAM_PARCHE_MITAD)
-    ximagen_g=ajustarBrillo(ximagen[:,:,1],img_mapa)
-    ximagen_g=difuminarBordes(ximagen_g,img_mapa)
+    ximagen_g=ajustarBrillo(ximagen[:,:,1],img_mapa[:,:,1])
+    ximagen_g=difuminarBordes(ximagen_g,img_mapa[:,:,1])
     ximagen_g=recortarBordesImagen(ximagen_g, TAM_PARCHE_MITAD)
-    ximagen_b=ajustarBrillo(ximagen[:,:,2],img_mapa)
-    ximagen_b=difuminarBordes(ximagen_b,img_mapa)
+    ximagen_b=ajustarBrillo(ximagen[:,:,2],img_mapa[:,:,2])
+    ximagen_b=difuminarBordes(ximagen_b,img_mapa[:,:,2])
     ximagen_b=recortarBordesImagen(ximagen_b, TAM_PARCHE_MITAD)
-    
+
     #ximagen=np.zeros((ximagen_r.shape[0],ximagen_r.shape[1],3))
     #ximagen[:,:,0]=ximagen_r[:,:]
     #ximagen[:,:,1]=ximagen_g[:,:]
@@ -949,7 +1253,7 @@ def get_aplicar_modeloAC_a_imagenes_DDColor(xmodelo,img_reducida,img_mapa):
     #Unir los 3 canales de la imagen
     ximagen_r=ximagen_r.reshape((ximagen_r.shape[0],ximagen_r.shape[1],1))
     ximagen_g=ximagen_g.reshape((ximagen_g.shape[0],ximagen_g.shape[1],1))
-    ximagen_b=ximagen_b.reshape((ximagen_b.shape[0],ximagen_b.shape[1],1))    
+    ximagen_b=ximagen_b.reshape((ximagen_b.shape[0],ximagen_b.shape[1],1))
     ximagen=unirDatosImagen3(ximagen_r,ximagen_g,ximagen_b)
     return ximagen
 #-----------------------------------------------------------------------------------------------------------
@@ -960,38 +1264,57 @@ def aplicar_modeloAC_a_imagenes_COMBINADA(xmodelo1,xmodelo2,xposini,xposfin,xcar
     for i in range(xposini,xposfin):
         img_reducida = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
         img_reducida = cv2.cvtColor(img_reducida, cv2.COLOR_BGR2GRAY)
-        
-        #Reducir el ruido gaussiano
-        img_reducida=cv2.fastNlMeansDenoising(img_reducida,None,2,7,21)
-        
+
+        #Reducir el ruido gaussiano (Opcional)
+        #img_reducida=cv2.fastNlMeansDenoising(img_reducida,None,2,7,21)
+
         xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizar(img_reducida)
-        
+
         #Reducir el ruido gaussiano
         #xdata_img_reducida_array_nor_g2=convertir_imagen_a_parches_normalizar(cv2.fastNlMeansDenoising(img_reducida,None,4,7,21))
-        
+
         #Aplicar modelo RNA
         decoded_maps = xmodelo1(xdata_img_reducida_array_nor).numpy()
         #decoded_maps = xmodelo1(xdata_img_reducida_array_nor_g2).numpy()
-        
+
+        #img_pred1=unir_parches_en_imagen(decoded_maps[:,:,:,0],img_reducida)
+        #img_mapa=unir_parches_en_imagen(decoded_maps[:,:,:,1],img_reducida)
         img_mapa=unir_parches_en_imagen(decoded_maps,img_reducida)
-        #img_mapa=ajustar_mapa_borde(img_mapa,40)        
+
+        #img_mapa=ajustar_mapa_borde(img_mapa,40)
+        #plt.imsave(xcarpeta_img_mapa_rec+'/'+getNombreArchivo(i)+xnom_img_mapa_reconstruida+'_pred1.png',img_pred1,cmap='gray')
         plt.imsave(xcarpeta_img_mapa_rec+'/'+getNombreArchivo(i)+xnom_img_mapa_reconstruida+'.png',img_mapa,cmap='gray')
         #--------------------------------------
-        
-        xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)        
+
+        #xdata_img_pred1_array_nor=convertir_imagen_a_parches_normalizar(img_pred1)
+        xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)
+
         xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+        #xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_pred1_array_nor,xdata_img_mapa_array_nor)
         #------Para aplicar repetidamente el modelo2------------
         for k in range(0,n_repetir_modelo2):
+            #[decoded_imgs0,decoded_imgs1] = xmodelo2(xtqdata_img_RyM_array_nor)
+            #decoded_imgs0=decoded_imgs0.numpy()
+            #decoded_imgs1=decoded_imgs1.numpy()
+            #ximagen0=unir_parches_en_imagen(decoded_imgs0,img_reducida)
+            #ximagen=unir_parches_en_imagen(decoded_imgs1,img_reducida)
             decoded_imgs = xmodelo2(xtqdata_img_RyM_array_nor).numpy()
             ximagen=unir_parches_en_imagen(decoded_imgs,img_reducida)
+
             #Reducir ruido
             #ximagen=cv2.fastNlMeansDenoising(ximagen.astype(np.uint8),None,2,7,21)
             xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizar(ximagen)
+            #xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(ximagen0)
             xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
         #--------------------------------------------------------
+        #[decoded_imgs0,decoded_imgs1] = xmodelo2(xtqdata_img_RyM_array_nor)
+        #decoded_imgs0=decoded_imgs0.numpy()
+        #decoded_imgs1=decoded_imgs1.numpy()
+        #ximagen0=unir_parches_en_imagen(decoded_imgs0,img_reducida)
+        #ximagen=unir_parches_en_imagen(decoded_imgs1,img_reducida)
         decoded_imgs = xmodelo2(xtqdata_img_RyM_array_nor).numpy()
         ximagen=unir_parches_en_imagen(decoded_imgs,img_reducida)
-        
+
         #Filtro 1 y 2
         ximagen=ajustarBrillo(ximagen,img_mapa)
         ximagen=difuminarBordes(ximagen,img_mapa)
@@ -999,79 +1322,124 @@ def aplicar_modeloAC_a_imagenes_COMBINADA(xmodelo1,xmodelo2,xposini,xposfin,xcar
         ximagen=difuminarBordes(ximagen,img_mapa)
         #Filtro 3
         #Aplicar el modelo a la imagen con bordes ampliados
-        ximagenDD=get_aplicar_modeloAC_a_imagenes_DD_COMBINADA(xmodelo1,xmodelo2,img_reducida)
+        ximagenDD=get_aplicar_modeloAC_a_imagenes_DD_COMBINADA(xmodelo1,xmodelo2,img_reducida,n_repetir_modelo2)
         ximagen=combinarBordesDD(ximagen,ximagenDD)
         ximagen=combinarBordesDD(ximagen,ximagenDD)
         #plt.imshow(ximagen, cmap='gray')
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'0.png',ximagen0,cmap='gray')
         plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',ximagen,cmap='gray')
 
 #Retorna una imagen aplicando el modelo de la imagen con border Ampliados y Reducidos
 #def get_aplicar_modeloAC_a_imagenes_DD_COMBINADA(xmodelo1,xmodelo2,img_reducida,xbrilloimagen):
-def get_aplicar_modeloAC_a_imagenes_DD_COMBINADA(xmodelo1,xmodelo2,img_reducida):
+def get_aplicar_modeloAC_a_imagenes_DD_COMBINADA(xmodelo1,xmodelo2,img_reducida,n_repetir_modelo2=0):
     img_reducida=ampliarBordesImagen(img_reducida, TAM_PARCHE_MITAD)
     xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizar(img_reducida)
     #Aplicar modelo RNA
-    #[decoded_maps,decoded_imgs] = xmodelo(xtqdata_img_RyM_array_nor).numpy()
-    #[decoded_maps,decoded_imgs] = xmodelo(xdata_img_reducida_array_nor).numpy()
+    #decoded_maps = xmodelo1(xdata_img_reducida_array_nor).numpy()
+    #img_pred1=unir_parches_en_imagen(decoded_maps[:,:,:,0],img_reducida)
+    #img_mapa=unir_parches_en_imagen(decoded_maps[:,:,:,1],img_reducida)
     decoded_maps = xmodelo1(xdata_img_reducida_array_nor).numpy()
     img_mapa=unir_parches_en_imagen(decoded_maps,img_reducida)
-    
-    xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)        
+
+    #xdata_img_pred1_array_nor=convertir_imagen_a_parches_normalizar(img_pred1)
+    xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)
+
     xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+    #xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_pred1_array_nor,xdata_img_mapa_array_nor)
+    for k in range(0,n_repetir_modelo2):
+        #[decoded_imgs0,decoded_imgs1] = xmodelo2(xtqdata_img_RyM_array_nor)
+        #decoded_imgs0=decoded_imgs0.numpy()
+        #decoded_imgs1=decoded_imgs1.numpy()
+        #ximagen0=unir_parches_en_imagen(decoded_imgs0,img_reducida)
+        #ximagen=unir_parches_en_imagen(decoded_imgs1,img_reducida)
+        decoded_imgs = xmodelo2(xtqdata_img_RyM_array_nor).numpy()
+        ximagen=unir_parches_en_imagen(decoded_imgs,img_reducida)
+
+        xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizar(ximagen)
+        #xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(ximagen0)
+        xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+
+    #[decoded_imgs0,decoded_imgs1] = xmodelo2(xtqdata_img_RyM_array_nor)
+    #decoded_imgs0=decoded_imgs0.numpy()
+    #decoded_imgs1=decoded_imgs1.numpy()
+    #ximagen0=unir_parches_en_imagen(decoded_imgs0,img_reducida)
+    #ximagen=unir_parches_en_imagen(decoded_imgs1,img_reducida)
     decoded_imgs = xmodelo2(xtqdata_img_RyM_array_nor).numpy()
     ximagen=unir_parches_en_imagen(decoded_imgs,img_reducida)
+
     #Filtro 1
-    ximagen=ajustarBrillo(ximagen,img_mapa)    
+    ximagen=ajustarBrillo(ximagen,img_mapa)
     ximagen=difuminarBordes(ximagen,img_mapa)
     ximagen=recortarBordesImagen(ximagen, TAM_PARCHE_MITAD)
-    
+
     return ximagen
 
 
 def aplicar_modeloAC_a_imagenesRGB_COMBINADAColor(xmodelo1,xmodelo2,xposini,xposfin,xcarpeta_img,xnom_img,xcarpeta_img_mapa,xnom_img_mapa,xcarpeta_img_rec,xnom_img_reconstruida,n_repetir_modelo2=0):
     for i in range(xposini,xposfin):
         img_reducida = cv2.imread(xcarpeta_img+'/'+getNombreArchivo(i)+xnom_img+'.png')
-        img_reducida = cv2.cvtColor(img_reducida, cv2.COLOR_BGR2RGB)        
-        
-        #Reducir el ruido gaussiano
-        img_reducida=cv2.fastNlMeansDenoisingColored(img_reducida,None,2,2,7,21)
-        
+        img_reducida = cv2.cvtColor(img_reducida, cv2.COLOR_BGR2RGB)
+
+        #Reducir el ruido gaussiano (Opcional)
+        #img_reducida=cv2.fastNlMeansDenoisingColored(img_reducida,None,2,2,7,21)
+
         xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizarColor(img_reducida)
 
         #Reducir el ruido gaussiano
         #xdata_img_reducida_array_nor_g2=convertir_imagen_a_parches_normalizarColor(cv2.fastNlMeansDenoisingColored(img_reducida,None,4,4,7,21))
-        
+
         #Aplicar modelo RNA
         decoded_maps = xmodelo1(xdata_img_reducida_array_nor).numpy()
         #decoded_maps = xmodelo1(xdata_img_reducida_array_nor_g2).numpy()
-        
-        img_mapa=unir_parches_en_imagen(decoded_maps,img_reducida[:,:,0])
-        plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_mapa+'.png',img_mapa,cmap='gray')
-        
+
+        #img_pred1=unir_parches_en_imagenColor(decoded_maps[:,:,:,0:3],img_reducida[:,:,0])
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_mapa+'_pred1.png',img_pred1)
+        #img_mapa=unir_parches_en_imagenColor(decoded_maps[:,:,:,3:6],img_reducida[:,:,0])
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_mapa+'.png',img_mapa)
+        img_mapa=unir_parches_en_imagenColor(decoded_maps,img_reducida[:,:,0])
+        plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_mapa+'.png',img_mapa)
+
         #-----------------------
-        xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)
+        #xdata_img_pred1_array_nor=convertir_imagen_a_parches_normalizarColor(img_pred1)
+        xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizarColor(img_mapa)
+
         xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+        #xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_pred1_array_nor,xdata_img_mapa_array_nor)
+
         for k in range(0,n_repetir_modelo2):
+            #[decoded_imgs0,decoded_imgs1] = xmodelo2(xtqdata_img_RyM_array_nor)
+            #decoded_imgs0=decoded_imgs0.numpy()
+            #decoded_imgs1=decoded_imgs1.numpy()
+            #ximagen0=unir_parches_en_imagenColor(decoded_imgs0,img_reducida[:,:,0])
+            #ximagen=unir_parches_en_imagenColor(decoded_imgs1,img_reducida[:,:,0])
             decoded_imgs = xmodelo2(xtqdata_img_RyM_array_nor).numpy()
             ximagen=unir_parches_en_imagenColor(decoded_imgs,img_reducida[:,:,0])
+
             xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizarColor(ximagen)
+            #xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizarColor(ximagen0)
             xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+
+        #[decoded_imgs0,decoded_imgs1] = xmodelo2(xtqdata_img_RyM_array_nor)
+        #decoded_imgs0=decoded_imgs0.numpy()
+        #decoded_imgs1=decoded_imgs1.numpy()
+        #ximagen0=unir_parches_en_imagenColor(decoded_imgs0,img_reducida[:,:,0])
+        #ximagen=unir_parches_en_imagenColor(decoded_imgs1,img_reducida[:,:,0])
         decoded_imgs = xmodelo2(xtqdata_img_RyM_array_nor).numpy()
         ximagen=unir_parches_en_imagenColor(decoded_imgs,img_reducida[:,:,0])
-        
+
         #Aplicar el modelo a la imagen con bordes ampliados
-        ximagenDD=get_aplicar_modeloAC_a_imagenes_DD_COMBINADAColor(xmodelo1,xmodelo2,img_reducida)
-        
-        ximagenR=ajustarBrillo(ximagen[:,:,0],img_mapa)
-        ximagenR=difuminarBordes(ximagenR,img_mapa)
+        ximagenDD=get_aplicar_modeloAC_a_imagenes_DD_COMBINADAColor(xmodelo1,xmodelo2,img_reducida,n_repetir_modelo2)
+
+        ximagenR=ajustarBrillo(ximagen[:,:,0],img_mapa[:,:,0])
+        ximagenR=difuminarBordes(ximagenR,img_mapa[:,:,0])
         ximagenR=combinarBordesDD(ximagenR,ximagenDD[:,:,0])
-        
-        ximagenG=ajustarBrillo(ximagen[:,:,1],img_mapa)
-        ximagenG=difuminarBordes(ximagenG,img_mapa)
+
+        ximagenG=ajustarBrillo(ximagen[:,:,1],img_mapa[:,:,1])
+        ximagenG=difuminarBordes(ximagenG,img_mapa[:,:,1])
         ximagenG=combinarBordesDD(ximagenG,ximagenDD[:,:,1])
-        
-        ximagenB=ajustarBrillo(ximagen[:,:,2],img_mapa)
-        ximagenB=difuminarBordes(ximagenB,img_mapa)
+
+        ximagenB=ajustarBrillo(ximagen[:,:,2],img_mapa[:,:,2])
+        ximagenB=difuminarBordes(ximagenB,img_mapa[:,:,2])
         ximagenB=combinarBordesDD(ximagenB,ximagenDD[:,:,2])
 
         #ximagen=unirDatosImagen3(ximagenR,ximagenG,ximagenB)
@@ -1081,9 +1449,10 @@ def aplicar_modeloAC_a_imagenesRGB_COMBINADAColor(xmodelo1,xmodelo2,xposini,xpos
         ximagen[:,:,1]=ximagenG[:,:]
         ximagen[:,:,2]=ximagenB[:,:]
         yimagen=ximagen.astype(np.uint8)
+        #plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'0.png',ximagen0)
         plt.imsave(xcarpeta_img_rec+'/'+getNombreArchivo(i)+xnom_img_reconstruida+'.png',yimagen)
 
-def get_aplicar_modeloAC_a_imagenes_DD_COMBINADAColor(xmodelo1,xmodelo2,img_reducida):
+def get_aplicar_modeloAC_a_imagenes_DD_COMBINADAColor(xmodelo1,xmodelo2,img_reducida,n_repetir_modelo2=0):
     img_reducida_r=ampliarBordesImagen(img_reducida[:,:,0], TAM_PARCHE_MITAD)
     img_reducida_g=ampliarBordesImagen(img_reducida[:,:,1], TAM_PARCHE_MITAD)
     img_reducida_b=ampliarBordesImagen(img_reducida[:,:,2], TAM_PARCHE_MITAD)
@@ -1092,43 +1461,68 @@ def get_aplicar_modeloAC_a_imagenes_DD_COMBINADAColor(xmodelo1,xmodelo2,img_redu
     img_reducida_g=img_reducida_g.reshape((img_reducida_g.shape[0],img_reducida_g.shape[1],1))
     img_reducida_b=img_reducida_b.reshape((img_reducida_b.shape[0],img_reducida_b.shape[1],1))
     img_reducida=unirDatosImagen3(img_reducida_r,img_reducida_g,img_reducida_b)
-    
+
     #img_mapa=ampliarBordesImagen(img_mapa, TAM_PARCHE_MITAD)
     xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizarColor(img_reducida)
     #xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)
     #Unir forma de (...,TAM_PARCHE,TAM_PARCHE,1)+(...,TAM_PARCHE,TAM_PARCHE,1) a (...,TAM_PARCHE,TAM_PARCHE,2)
     #xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+
     #Aplicar modelo RNA
-    #[decoded_maps,decoded_imgs] = xmodelo(xtqdata_img_RyM_array_nor).numpy()
-    #[decoded_maps,decoded_imgs] = xmodelo(xdata_img_reducida_array_nor).numpy()
+    #decoded_maps = xmodelo1(xdata_img_reducida_array_nor).numpy()
+    #img_pred1=unir_parches_en_imagenColor(decoded_maps[:,:,:,0:3],img_reducida[:,:,0])
+    #img_mapa=unir_parches_en_imagenColor(decoded_maps[:,:,:,3:6],img_reducida[:,:,0])
     decoded_maps = xmodelo1(xdata_img_reducida_array_nor).numpy()
-    img_mapa=unir_parches_en_imagen(decoded_maps,img_reducida[:,:,0])
-    
-    xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizar(img_mapa)        
+    img_mapa=unir_parches_en_imagenColor(decoded_maps,img_reducida[:,:,0])
+
+    #xdata_img_pred1_array_nor=convertir_imagen_a_parches_normalizarColor(img_pred1)
+    xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizarColor(img_mapa)
+
     xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+    #xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_pred1_array_nor,xdata_img_mapa_array_nor)
+
+    for k in range(0,n_repetir_modelo2):
+        #[decoded_imgs0,decoded_imgs1] = xmodelo2(xtqdata_img_RyM_array_nor)
+        #decoded_imgs0=decoded_imgs0.numpy()
+        #decoded_imgs1=decoded_imgs1.numpy()
+        #ximagen0=unir_parches_en_imagenColor(decoded_imgs0,img_reducida[:,:,0])
+        #ximagen=unir_parches_en_imagenColor(decoded_imgs1,img_reducida[:,:,0])
+        decoded_imgs = xmodelo2(xtqdata_img_RyM_array_nor).numpy()
+        ximagen=unir_parches_en_imagenColor(decoded_imgs,img_reducida[:,:,0])
+
+        xdata_img_reducida_array_nor=convertir_imagen_a_parches_normalizarColor(ximagen)
+        #xdata_img_mapa_array_nor=convertir_imagen_a_parches_normalizarColor(ximagen0)
+        xtqdata_img_RyM_array_nor=unirDatosImagen(xdata_img_reducida_array_nor,xdata_img_mapa_array_nor)
+
+    #[decoded_imgs0,decoded_imgs1] = xmodelo2(xtqdata_img_RyM_array_nor)
+    #decoded_imgs0=decoded_imgs0.numpy()
+    #decoded_imgs1=decoded_imgs1.numpy()
+    #ximagen0=unir_parches_en_imagenColor(decoded_imgs0,img_reducida[:,:,0])
+    #ximagen=unir_parches_en_imagenColor(decoded_imgs1,img_reducida[:,:,0])
     decoded_imgs = xmodelo2(xtqdata_img_RyM_array_nor).numpy()
     ximagen=unir_parches_en_imagenColor(decoded_imgs,img_reducida[:,:,0])
-    
-    ximagen_r=ajustarBrillo(ximagen[:,:,0],img_mapa)
-    ximagen_r=difuminarBordes(ximagen_r,img_mapa)
+
+    ximagen_r=ajustarBrillo(ximagen[:,:,0],img_mapa[:,:,0])
+    ximagen_r=difuminarBordes(ximagen_r,img_mapa[:,:,0])
     ximagen_r=recortarBordesImagen(ximagen_r, TAM_PARCHE_MITAD)
-    
-    ximagen_g=ajustarBrillo(ximagen[:,:,1],img_mapa)
-    ximagen_g=difuminarBordes(ximagen_g,img_mapa)
+
+    ximagen_g=ajustarBrillo(ximagen[:,:,1],img_mapa[:,:,1])
+    ximagen_g=difuminarBordes(ximagen_g,img_mapa[:,:,1])
     ximagen_g=recortarBordesImagen(ximagen_g, TAM_PARCHE_MITAD)
-    
-    ximagen_b=ajustarBrillo(ximagen[:,:,2],img_mapa)
-    ximagen_b=difuminarBordes(ximagen_b,img_mapa)
+
+    ximagen_b=ajustarBrillo(ximagen[:,:,2],img_mapa[:,:,2])
+    ximagen_b=difuminarBordes(ximagen_b,img_mapa[:,:,2])
     ximagen_b=recortarBordesImagen(ximagen_b, TAM_PARCHE_MITAD)
-    
+
     ximagen_r=ximagen_r.reshape((ximagen_r.shape[0],ximagen_r.shape[1],1))
     ximagen_g=ximagen_g.reshape((ximagen_g.shape[0],ximagen_g.shape[1],1))
     ximagen_b=ximagen_b.reshape((ximagen_b.shape[0],ximagen_b.shape[1],1))
-    
-    ximagen=unirDatosImagen3(ximagen_r,ximagen_g,ximagen_b)    
+
+    ximagen=unirDatosImagen3(ximagen_r,ximagen_g,ximagen_b)
     return ximagen
 #-----------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------
+
 
 
 #------------------------------FUNCIONES PARA MOSTRAR IMAGENES DE 2 3 Y 4 FILAS------------------
@@ -1136,14 +1530,14 @@ def mostrar_imagen_2f(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_img2):
     for i in range(xposini,xposfin):
         tablag=plt.figure(figsize=(20, 20))
         #axis_font = {'size':'18'}
-        
+
         ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,2,1)
         plt.title(getNombreArchivo(i)+xnom_img1+'.png')
         #plt.xlabel('Tamaño:'+str(ximg1.shape),**axis_font)
         plt.imshow(ximg1,cmap='gray',vmin=0, vmax=255)
-        
+
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
         ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,2,2)
@@ -1155,19 +1549,19 @@ def mostrar_imagen_3f(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_img2,xc
     for i in range(xposini,xposfin):
         tablag=plt.figure(figsize=(20, 20))
         #axis_font = {'size':'18'}
-        
+
         ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,1)
         plt.title(getNombreArchivo(i)+xnom_img1+'.png')
         plt.imshow(ximg1,cmap='gray',vmin=0, vmax=255)
-        
+
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
         ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,2)
         plt.title(getNombreArchivo(i)+xnom_img2+'.png')
         plt.imshow(ximg2,cmap='gray',vmin=0, vmax=255)
-        
+
         ximg3=cv2.imread(xcarpeta3+'/'+getNombreArchivo(i)+xnom_img3+'.png')
         ximg3=cv2.cvtColor(ximg3, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,3)
@@ -1226,19 +1620,19 @@ def mostrar_imagen_3f_RGB(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_img
     for i in range(xposini,xposfin):
         tablag=plt.figure(figsize=(20, 20))
         #axis_font = {'size':'18'}
-        
+
         ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,1)
         plt.title(getNombreArchivo(i)+xnom_img1+'.png')
         plt.imshow(ximg1)
-        
+
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
         ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,2)
         plt.title(getNombreArchivo(i)+xnom_img2+'.png')
         plt.imshow(ximg2)
-        
+
         ximg3=cv2.imread(xcarpeta3+'/'+getNombreArchivo(i)+xnom_img3+'.png')
         ximg3=cv2.cvtColor(ximg3, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,3)
@@ -1279,14 +1673,14 @@ def mostrar_imagen_2f_RGB_GRIS(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xno
     for i in range(xposini,xposfin):
         tablag=plt.figure(figsize=(20, 20))
         #axis_font = {'size':'18'}
-        
+
         ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,2,1)
         plt.title(getNombreArchivo(i)+xnom_img1+'.png')
         #plt.xlabel('Tamaño:'+str(ximg1.shape),**axis_font)
         plt.imshow(ximg1)
-        
+
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
         ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,2,2)
@@ -1318,7 +1712,7 @@ def agregarCuadroLupa(c1,ximg1,porcentajeA=0.40,porcentajeB=0.40):
 
     #Hacer zoom del rectángulo pequeño y pegar en la imagen en la esquina superior izquierda
     ximg1_zoom=np.copy(ximg1[0+despla1y:ximg1.shape[0]-despla2y,0+despla1x:ximg1.shape[1]-despla2x])
-    ximg1_zoom2 = cv2.resize(ximg1_zoom, dsize=(despla1x,despla1y), interpolation=cv2.INTER_CUBIC)  
+    ximg1_zoom2 = cv2.resize(ximg1_zoom, dsize=(despla1x,despla1y), interpolation=cv2.INTER_CUBIC)
     ximg1[0+desplay_rect_grande:despla1y+desplay_rect_grande,0+desplax_rect_grande:despla1x+desplax_rect_grande]=np.copy(ximg1_zoom2[0:despla1y,0:despla1x])
 
     #Dibujar bordes rectángulo pequeño
@@ -1332,7 +1726,7 @@ def agregarCuadroLupa(c1,ximg1,porcentajeA=0.40,porcentajeB=0.40):
                              despla1x,
                              despla1y, linewidth=2, edgecolor='#333333', facecolor='none')
     c1.add_patch(rect2)
-    
+
     #Dinujar lineas diagonales
     c1.plot([despla1x+desplax_rect_grande,despla1x+ancho_rect_peq],[0+desplay_rect_grande,despla1y],color="#0000DD95")
     c1.plot([0+desplax_rect_grande,despla1x],[despla1y+desplay_rect_grande,despla1y+alto_rect_peq],color="#0000DD95")
@@ -1342,7 +1736,7 @@ def mostrar_imagen_2f_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_im
     for i in range(xposini,xposfin):
         tablag=plt.figure(figsize=(20, 20))
         #axis_font = {'size':'18'}
-        
+
         ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,2,1)
@@ -1350,9 +1744,9 @@ def mostrar_imagen_2f_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_im
         #plt.xlabel('Tamaño:'+str(ximg1.shape),**axis_font)
         agregarCuadroLupa(c1,ximg1)
         plt.imshow(ximg1,cmap='gray',vmin=0, vmax=255)
-        
+
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
-        ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)        
+        ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,2,2)
         plt.title(getNombreArchivo(i)+xnom_img2+'.png')
         #plt.xlabel('Tamaño:'+str(ximg2.shape),**axis_font)
@@ -1363,7 +1757,7 @@ def mostrar_imagen_2f_RGB_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xno
     for i in range(xposini,xposfin):
         tablag=plt.figure(figsize=(20, 20))
         #axis_font = {'size':'18'}
-        
+
         ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,2,1)
@@ -1384,21 +1778,21 @@ def mostrar_imagen_3f_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_im
     for i in range(xposini,xposfin):
         tablag=plt.figure(figsize=(20, 20))
         #axis_font = {'size':'18'}
-        
+
         ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,1)
         plt.title(getNombreArchivo(i)+xnom_img1+'.png')
         agregarCuadroLupa(c1,ximg1,0.50,0.30)
         plt.imshow(ximg1,cmap='gray',vmin=0, vmax=255)
-        
+
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
         ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,2)
         plt.title(getNombreArchivo(i)+xnom_img2+'.png')
         agregarCuadroLupa(c1,ximg2,0.50,0.30)
         plt.imshow(ximg2,cmap='gray',vmin=0, vmax=255)
-        
+
         ximg3=cv2.imread(xcarpeta3+'/'+getNombreArchivo(i)+xnom_img3+'.png')
         ximg3=cv2.cvtColor(ximg3, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,3)
@@ -1410,21 +1804,21 @@ def mostrar_imagen_3f_RGB_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xno
     for i in range(xposini,xposfin):
         tablag=plt.figure(figsize=(20, 20))
         #axis_font = {'size':'18'}
-        
+
         ximg1=cv2.imread(xcarpeta1+'/'+getNombreArchivo(i)+xnom_img1+'.png')
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,1)
         plt.title(getNombreArchivo(i)+xnom_img1+'.png')
         agregarCuadroLupa(c1,ximg1,0.50,0.30)
         plt.imshow(ximg1)
-        
+
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
         ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,2)
         plt.title(getNombreArchivo(i)+xnom_img2+'.png')
         agregarCuadroLupa(c1,ximg2,0.50,0.30)
         plt.imshow(ximg2)
-        
+
         ximg3=cv2.imread(xcarpeta3+'/'+getNombreArchivo(i)+xnom_img3+'.png')
         ximg3=cv2.cvtColor(ximg3, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,3)
