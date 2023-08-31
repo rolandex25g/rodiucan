@@ -1,8 +1,4 @@
-/ColabNotebooks/etapa1 imagenes y automatas.ipynb
-/ColabNotebooks/etapa2 aumento y reduccion de imagenes.ipynb
-/ColabNotebooks/etapa3 prepara y entrena modelo
-/ColabNotebooks/etapa3 prepara y entrena modeloRGB.ipynb
-/ColabNotebooks/etapa4 prueba de calidad modelo.ipynb
+.gitignore
 /ColabNotebooks/.ipynb_checkpoints
 /ColabNotebooks/flagged
 /datosimg/general100
