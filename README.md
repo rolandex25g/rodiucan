@@ -3,7 +3,38 @@
 </p>
 <p>Es un trabajo de tesis que propone un modelo para aumentar la resolución de imágenes utilizando autómatas celulares y redes neuronales convolucionales, considerando un conjunto de datos reducido para optimizar el uso de los recursos computacionales.</p>
 
+<h3>Descripción del modelo</h3>
+![esquema](esquema.jpg)
+
+<h5>Autómata</h5>
+<p>Se utilizaron autómatas celulares para detectar los bordes y fondos de las imágenes, obteniendo así una representación simplificada pero muy descriptiva de los bordes de los objetos en las imágenes.</p>
+![automata1](automata1.jpg)
+<br>
+![automata2](automata2.jpg)
+<br>
+
+<h5>Redes neuronales UNET</h5>
+<p>Estas imágenes luego se usaron para entrenar la primera red neuronal con el objetivo de que realice la misma tarea que el autómata pero de forma generalizada.
+  La segunda red neuronal combina las imágenes degradadas junto con el resultado de la primera red, obteniendo finalmente la imagen optimizada de mejor resolución.</p>
+<p>Las degradaciones consideradas fueron: reducción de resolución en un factor 0x,2x,4x,6x por interpolación bicubica y vecinos más cercanos, tambien se considero el desenfoque. </p>
+
+<h3>Ejemplos</h3>
+Imagen degradada(Entrada), imagen de bordes(Salida red1), imagen optimizada(Salida red2).
+<br>
+![ejemplogris](ejemplogris.jpg)
+<br>
+![ejemplogris2](ejemplogris2.jpg)
+<br>
 ![ejemplo](ejemplo.jpg)
+<br>
+![ejemplo](ejemplo2.jpg)
+<br>
+![ejemplo3](ejemplo3.jpg)
+<br>
+
+<h3>Entrenamiento</h3>
+<p>El entrenamiento se realizó con el conjunto de datos "General100" y con parches de 128x128 píxeles.</p>
+
 
 <h3>Códio fuente y ejemplos</h3>
 <p>
@@ -51,15 +82,6 @@ Un ejemplo demostrativo también está disponible en Hugging Face:
 6. <b>Ejemplo de uso</b> del modelo h5 en colores. 
 <a target="_blank" href="https://colab.research.google.com/drive/10tPKBZuoDGm4IcLCjMnWvVGqxPGcaBGx">Cuaderno 6</a>
 </p>
-
-<h3>Entrenamiento</h3>
-
-<p>El entrenamiento se realizó con el conjunto de datos "General100" y con parches de 128x128 píxeles.</p>
-
-<h3>Descripción del modelo</h3>
-<p>Se utilizaron autómatas celulares para detectar los bordes y fondos de las imágenes, obteniendo así una representación simplificada pero muy descriptiva de los bordes de los objetos en las imágenes.</p>
-
-<p>Estas imágenes luego se usaron como un espacio intermedio de transformación entre dos redes neuronales convolucionales para escalar la resolución de la imagen. Las redes neuronales se entrenaron por separado y luego se combinaron usando un esquema similar a una red generativa condicional para refinar el modelo.</p>
 
 
 <h3>Resultados de la evaluación</h3>
@@ -110,5 +132,5 @@ Un ejemplo demostrativo también está disponible en Hugging Face:
 </table>
 
 <h3>Conclusiones</h3>
-<p>El modelo propuesto al usar las imágenes generadas por el autómata es lo suficientemente eficiente como para poder ser entrenado con un conjunto reducido de datos de 100 imágenes y es factible su entrenamiento sin aceleración GPU. Dicho entrenamiento sin GPU duro 41 horas, tuvo un consumo eléctrico de 12.18 kilo-vatios y un equivalente de 5.26 kilogramos de emisiones de dióxido de carbono.</p>
-<p>En las evaluaciones se verifico que el modelo propuesto, optimiza las imágenes de baja calidad principalmente respecto a la reconstrucción de bordes, y en general tiene un grado de mejora aproximado al modelo ESRGAN y superior en cuatro de los seis conjuntos evaluados. Esta mejora se hace evidente con las métricas MSE, PSNR y SSIM, pero no con la métrica DISTS.</p>
+<p>El modelo propuesto al usar las imágenes generadas por el autómata es lo suficientemente eficiente como para poder ser entrenado con un conjunto reducido de datos de 100 imágenes y es factible su entrenamiento sin aceleración GPU. Dicho entrenamiento sin GPU duro 28 horas, tuvo un consumo eléctrico de 8.32 kilo-vatios y un equivalente de 3.6 kilogramos de emisiones de dióxido de carbono.</p>
+<p>En las evaluaciones se verifico que el modelo propuesto, optimiza las imágenes de baja calidad principalmente respecto a la reconstrucción de bordes, y en general tiene un grado de mejora aproximado al modelo ESRGAN y ligeramente mejor en cuatro de los seis conjuntos evaluados. Esta mejora se hace evidente con las métricas MSE, PSNR y SSIM, pero no con la métrica DISTS.</p>
