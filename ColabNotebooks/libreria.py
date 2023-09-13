@@ -1688,48 +1688,92 @@ def mostrar_imagen_2f_RGB_GRIS(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xno
         #plt.xlabel('Tamaño:'+str(ximg2.shape),**axis_font)
         plt.imshow(ximg2,cmap='gray',vmin=0, vmax=255)
 
-#La suma de porcentajes A y B debe ser menor a 1
-#Por ejempo 0.40+0.40=0.80 es menor a 1, y el resto 0.20 es el porcentaje del rectángulo pequeña
-def agregarCuadroLupa(c1,ximg1,porcentajeA=0.40,porcentajeB=0.40):
-    porcentaje1x=porcentajeA
-    porcentaje2x=porcentajeB
-    porcentaje1y=porcentajeA
-    porcentaje2y=porcentajeB
+#cuadro entre 0 a 1, es el porcentaje del rectángulo grande (Por defecto 0.40)
+#cuadroX,cuadroY entre 0 a 1, es la posición en porcentaje donde se mostrara el cuadro pequeño
+#cuadroZoom entre 0 a 1, es el porcentaje del rectángulo pequeño (Por defecto 0.20)
+#cuadroZoomX,cuadroZoomY son las coordenadas x,y en porcentaje de la zona donde se hace zoom
+def agregarCuadroLupa(c1,ximg1,cuadro=0.40,cuadroX=0.55,cuadroY=0.10,cuadroZoom=0.20,cuadroZoomX=0.30,cuadroZoomY=0.40):
+    ancho_rect_grande=int(ximg1.shape[1]*cuadro)
+    alto_rect_grande=int(ximg1.shape[0]*cuadro)
+    
+    desplax_rect_grande=int(ximg1.shape[1]*cuadroX)
+    desplay_rect_grande=int(ximg1.shape[0]*cuadroY)    
+    
+    ancho_rect_peq=int(ximg1.shape[1]*cuadroZoom)
+    alto_rect_peq=int(ximg1.shape[0]*cuadroZoom)
 
-    despla1x=int(ximg1.shape[1]*porcentaje1x)
-    despla2x=int(ximg1.shape[1]*porcentaje2x)
-    despla1y=int(ximg1.shape[0]*porcentaje1y)
-    despla2y=int(ximg1.shape[0]*porcentaje2y)
-
-    ancho_rect_peq=int(ximg1.shape[1]*(1-(porcentaje1x+porcentaje2x)))
-    alto_rect_peq=int(ximg1.shape[0]*(1-(porcentaje1y+porcentaje2y)))
-
-    #Desplazamiento del rectángulo grande
-    #desplay_rect_grande=0
-    #desplax_rect_grande=0
-    desplay_rect_grande=int(alto_rect_peq/2)
-    desplax_rect_grande=10
-
+    despla1x=int(ximg1.shape[1]*cuadroZoomX)
+    despla1y=int(ximg1.shape[0]*cuadroZoomY)
+    
+    
     #Hacer zoom del rectángulo pequeño y pegar en la imagen en la esquina superior izquierda
-    ximg1_zoom=np.copy(ximg1[0+despla1y:ximg1.shape[0]-despla2y,0+despla1x:ximg1.shape[1]-despla2x])
-    ximg1_zoom2 = cv2.resize(ximg1_zoom, dsize=(despla1x,despla1y), interpolation=cv2.INTER_CUBIC)
-    ximg1[0+desplay_rect_grande:despla1y+desplay_rect_grande,0+desplax_rect_grande:despla1x+desplax_rect_grande]=np.copy(ximg1_zoom2[0:despla1y,0:despla1x])
+    ximg1_zoom=np.copy(ximg1[despla1y:despla1y+alto_rect_peq,despla1x:despla1x+ancho_rect_peq])
+    ximg1_zoom2 = cv2.resize(ximg1_zoom, dsize=(ancho_rect_grande,alto_rect_grande), interpolation=cv2.INTER_CUBIC)    
+    ximg1[desplay_rect_grande:desplay_rect_grande+alto_rect_grande,desplax_rect_grande:desplax_rect_grande+ancho_rect_grande]=np.copy(ximg1_zoom2[0:alto_rect_grande,0:ancho_rect_grande])
 
     #Dibujar bordes rectángulo pequeño
-    c1.plot([despla1x+desplax_rect_grande,despla1x+ancho_rect_peq],[0+despla1y,despla1y],color="#0000DD95")
-    c1.plot([despla1x,despla1x+ancho_rect_peq],[0+despla1y+alto_rect_peq,despla1y+alto_rect_peq],color="#0000DD95")
-    c1.plot([despla1x,despla1x],[0+despla1y+desplay_rect_grande,despla1y+alto_rect_peq],color="#0000DD95")
-    c1.plot([despla1x+ancho_rect_peq,despla1x+ancho_rect_peq],[0+despla1y,despla1y+alto_rect_peq],color="#0000DD95")
+    x1=despla1x
+    y1=despla1y
+    x2=despla1x+ancho_rect_peq
+    y2=despla1y
+    if((x1>=desplax_rect_grande) and (x1<=desplax_rect_grande+ancho_rect_grande)):
+        if((y1>=desplay_rect_grande) and (y1<=desplay_rect_grande+alto_rect_grande)):
+            x1=desplax_rect_grande+ancho_rect_grande
+    if((x2>=desplax_rect_grande) and (x2<=desplax_rect_grande+ancho_rect_grande)):
+        if((y2>=desplay_rect_grande) and (y2<=desplay_rect_grande+alto_rect_grande)):
+            x2=desplax_rect_grande
+    c1.plot([x1,x2],[y1,y2],color="#0000DD95")
+    
+    x1=despla1x
+    y1=despla1y+alto_rect_peq
+    x2=despla1x+ancho_rect_peq
+    y2=despla1y+alto_rect_peq
+    if((x1>=desplax_rect_grande) and (x1<=desplax_rect_grande+ancho_rect_grande)):
+        if((y1>=desplay_rect_grande) and (y1<=desplay_rect_grande+alto_rect_grande)):
+            x1=desplax_rect_grande+ancho_rect_grande
+    if((x2>=desplax_rect_grande) and (x2<=desplax_rect_grande+ancho_rect_grande)):
+        if((y2>=desplay_rect_grande) and (y2<=desplay_rect_grande+alto_rect_grande)):
+            x2=desplax_rect_grande
+    c1.plot([x1,x2],[y1,y2],color="#0000DD95")
+    
+    x1=despla1x
+    y1=despla1y
+    x2=despla1x
+    y2=despla1y+alto_rect_peq
+    if((x1>=desplax_rect_grande) and (x1<=desplax_rect_grande+ancho_rect_grande)):
+        if((y1>=desplay_rect_grande) and (y1<=desplay_rect_grande+alto_rect_grande)):
+            y1=desplay_rect_grande+alto_rect_grande        
+    if((x2>=desplax_rect_grande) and (x2<=desplax_rect_grande+ancho_rect_grande)):
+        if((y2>=desplay_rect_grande) and (y2<=desplay_rect_grande+alto_rect_grande)):
+            y2=desplay_rect_grande
+    c1.plot([x1,x2],[y1,y2],color="#0000DD95")
+    
+    x1=despla1x+ancho_rect_peq
+    y1=despla1y
+    x2=despla1x+ancho_rect_peq
+    y2=despla1y+alto_rect_peq
+    if((x1>=desplax_rect_grande) and (x1<=desplax_rect_grande+ancho_rect_grande)):
+        if((y1>=desplay_rect_grande) and (y1<=desplay_rect_grande+alto_rect_grande)):
+            y1=desplay_rect_grande+alto_rect_grande
+    if((x2>=desplax_rect_grande) and (x2<=desplax_rect_grande+ancho_rect_grande)):
+        if((y2>=desplay_rect_grande) and (y2<=desplay_rect_grande+alto_rect_grande)):
+            y2=desplay_rect_grande
+    c1.plot([x1,x2],[y1,y2],color="#0000DD95")
 
     #Dibujar bordes rectángulo grande
-    rect2 = patches.Rectangle((0+desplax_rect_grande, 0+desplay_rect_grande),
-                             despla1x,
-                             despla1y, linewidth=2, edgecolor='#333333', facecolor='none')
+    rect2 = patches.Rectangle((desplax_rect_grande, desplay_rect_grande),
+                             ancho_rect_grande,
+                             alto_rect_grande, linewidth=2, edgecolor='#333333', facecolor='none')
     c1.add_patch(rect2)
 
-    #Dinujar lineas diagonales
-    c1.plot([despla1x+desplax_rect_grande,despla1x+ancho_rect_peq],[0+desplay_rect_grande,despla1y],color="#0000DD95")
-    c1.plot([0+desplax_rect_grande,despla1x],[despla1y+desplay_rect_grande,despla1y+alto_rect_peq],color="#0000DD95")
+    #Dibujar lineas diagonales
+    if(desplax_rect_grande<despla1x):
+        c1.plot([desplax_rect_grande+ancho_rect_grande,despla1x+ancho_rect_peq],[desplay_rect_grande,despla1y],color="#0000DD95")
+        c1.plot([desplax_rect_grande,despla1x],[desplay_rect_grande+alto_rect_grande,despla1y+alto_rect_peq],color="#0000DD95")
+    else:
+        c1.plot([desplax_rect_grande+ancho_rect_grande,despla1x+ancho_rect_peq],[desplay_rect_grande+alto_rect_grande,despla1y+alto_rect_peq],color="#0000DD95")
+        c1.plot([desplax_rect_grande,despla1x],[desplay_rect_grande,despla1y],color="#0000DD95")
+    
     return ximg1_zoom
 
 def mostrar_imagen_2f_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_img2):
@@ -1783,20 +1827,20 @@ def mostrar_imagen_3f_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xnom_im
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,1)
         plt.title(getNombreArchivo(i)+xnom_img1+'.png')
-        agregarCuadroLupa(c1,ximg1,0.50,0.30)
+        agregarCuadroLupa(c1,ximg1)
         plt.imshow(ximg1,cmap='gray',vmin=0, vmax=255)
 
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
         ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,2)
         plt.title(getNombreArchivo(i)+xnom_img2+'.png')
-        agregarCuadroLupa(c1,ximg2,0.50,0.30)
+        agregarCuadroLupa(c1,ximg2)
         plt.imshow(ximg2,cmap='gray',vmin=0, vmax=255)
 
         ximg3=cv2.imread(xcarpeta3+'/'+getNombreArchivo(i)+xnom_img3+'.png')
         ximg3=cv2.cvtColor(ximg3, cv2.COLOR_BGR2GRAY)
         c1=tablag.add_subplot(1,3,3)
-        agregarCuadroLupa(c1,ximg3,0.50,0.30)
+        agregarCuadroLupa(c1,ximg3)
         plt.title(getNombreArchivo(i)+xnom_img3+'.png')
         plt.imshow(ximg3,cmap='gray',vmin=0, vmax=255)
 
@@ -1809,21 +1853,21 @@ def mostrar_imagen_3f_RGB_lupa(xposini,xposfin,xcarpeta1,xnom_img1,xcarpeta2,xno
         ximg1=cv2.cvtColor(ximg1, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,1)
         plt.title(getNombreArchivo(i)+xnom_img1+'.png')
-        agregarCuadroLupa(c1,ximg1,0.50,0.30)
+        agregarCuadroLupa(c1,ximg1)
         plt.imshow(ximg1)
 
         ximg2=cv2.imread(xcarpeta2+'/'+getNombreArchivo(i)+xnom_img2+'.png')
         ximg2=cv2.cvtColor(ximg2, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,2)
         plt.title(getNombreArchivo(i)+xnom_img2+'.png')
-        agregarCuadroLupa(c1,ximg2,0.50,0.30)
+        agregarCuadroLupa(c1,ximg2)
         plt.imshow(ximg2)
 
         ximg3=cv2.imread(xcarpeta3+'/'+getNombreArchivo(i)+xnom_img3+'.png')
         ximg3=cv2.cvtColor(ximg3, cv2.COLOR_BGR2RGB)
         c1=tablag.add_subplot(1,3,3)
         plt.title(getNombreArchivo(i)+xnom_img3+'.png')
-        agregarCuadroLupa(c1,ximg3,0.50,0.30)
+        agregarCuadroLupa(c1,ximg3)
         plt.imshow(ximg3)
 
 #---------------------------FUNCIONES PARA GUARDAR, ABRIR, EXPORTAR LOS MODELOS-----------------
