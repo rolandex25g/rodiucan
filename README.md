@@ -4,13 +4,13 @@
 <p>Es un trabajo de tesis que propone un modelo para aumentar la resolución de imágenes utilizando autómatas celulares y redes neuronales convolucionales, considerando un conjunto de datos reducido para optimizar el uso de los recursos computacionales.</p>
 
 <h3>Descripción del modelo</h3>
-![esquema](https://github.com/rolandex25g/rodiucan/blob/main/esquema.jpg)
+<img src="https://github.com/rolandex25g/rodiucan/blob/main/esquema.jpg" />
 
 <h5>Autómata</h5>
 <p>Se utilizaron autómatas celulares para detectar los bordes y fondos de las imágenes, obteniendo así una representación simplificada pero muy descriptiva de los bordes de los objetos en las imágenes.</p>
-![automata1](https://github.com/rolandex25g/rodiucan/blob/main/automata1.jpg)
+<img src="https://github.com/rolandex25g/rodiucan/blob/main/automata1.jpg" />
 <br>
-![automata2](https://github.com/rolandex25g/rodiucan/blob/main/automata2.jpg)
+<img src="https://github.com/rolandex25g/rodiucan/blob/main/automata2.jpg" />
 <br>
 
 <h5>Redes neuronales UNET</h5>
@@ -21,15 +21,15 @@
 <h3>Ejemplos</h3>
 Imagen degradada(Entrada), imagen de bordes(Salida red1), imagen optimizada(Salida red2).
 <br>
-![ejemplogris](https://github.com/rolandex25g/rodiucan/blob/main/ejemplogris.jpg)
+<img src="https://github.com/rolandex25g/rodiucan/blob/main/ejemplogris.jpg" />
 <br>
-![ejemplogris2](https://github.com/rolandex25g/rodiucan/blob/main/ejemplogris2.jpg)
+<img src="https://github.com/rolandex25g/rodiucan/blob/main/ejemplogris2.jpg" />
 <br>
-![ejemplo](https://github.com/rolandex25g/rodiucan/blob/main/ejemplo.jpg)
+<img src="https://github.com/rolandex25g/rodiucan/blob/main/ejemplo.jpg" />
 <br>
-![ejemplo2](https://github.com/rolandex25g/rodiucan/blob/main/ejemplo2.jpg)
+<img src="https://github.com/rolandex25g/rodiucan/blob/main/ejemplo2.jpg" />
 <br>
-![ejemplo3](https://github.com/rolandex25g/rodiucan/blob/main/ejemplo3.jpg)
+<img src="https://github.com/rolandex25g/rodiucan/blob/main/ejemplo3.jpg" />
 <br>
 
 <h3>Entrenamiento</h3>
