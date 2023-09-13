@@ -4,7 +4,7 @@
 <p>Es un trabajo de tesis que propone un modelo para aumentar la resolución de imágenes utilizando autómatas celulares y redes neuronales convolucionales, considerando un conjunto de datos reducido para optimizar el uso de los recursos computacionales.</p>
 
 <h3>Descripción del modelo</h3>
-![esquema](esquema.jpg)
+![esquema](https://github.com/rolandex25g/rodiucan/blob/main/esquema.jpg)
 
 <h5>Autómata</h5>
 <p>Se utilizaron autómatas celulares para detectar los bordes y fondos de las imágenes, obteniendo así una representación simplificada pero muy descriptiva de los bordes de los objetos en las imágenes.</p>
